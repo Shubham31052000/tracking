@@ -13,11 +13,15 @@
     <script>
         (function() {
             // 1. Get query string parameters
-            const params     = new URLSearchParams(window.location.search);
-            const cid        = params.get('cid') || '';
-            const cmp        = params.get('cmp') || '';
-            const email      = params.get('email') || '';
-            const rawRedirect = params.get('redirect');
+            const params       = new URLSearchParams(window.location.search);
+            const cid          = params.get('cid') || '';
+            const cmp          = params.get('cmp') || '';
+            const email        = params.get('email') || '';
+            const utm_source   = params.get('utm_source') || 'newsletter';
+            const utm_medium   = params.get('utm_medium') || 'email';
+            const utm_campaign = params.get('utm_campaign') || cmp;
+            const utm_content  = params.get('utm_content') || '';
+            const rawRedirect  = params.get('redirect');
 
             // 2. Resolve target landing page (Decode URL)
             let targetUrl = 'https://www.bioenabletech.com'; // fallback only if blank
@@ -33,7 +37,11 @@
             const appsScriptUrl = "https://script.google.com/macros/s/AKfycbzXdTdZIpRBPMm1NsPeIpF6J9N9zAykwENMEEmfvSfhdQteRUsFxujX43BIt3gHZ1OTzg/exec"
                 + "?cmp=" + encodeURIComponent(cmp)
                 + "&cid=" + encodeURIComponent(cid)
-                + "&email=" + encodeURIComponent(email);
+                + "&email=" + encodeURIComponent(email)
+                + "&utm_source=" + encodeURIComponent(utm_source)
+                + "&utm_medium=" + encodeURIComponent(utm_medium)
+                + "&utm_campaign=" + encodeURIComponent(utm_campaign)
+                + "&utm_content=" + encodeURIComponent(utm_content);
 
             // 4. FIRE & FORGET (Send log packet in background - non-blocking)
             try {
