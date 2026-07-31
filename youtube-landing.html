@@ -192,12 +192,13 @@
     display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s;
   }
   .tile:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(10,31,68,.10);}
-  .tile .thumb{height:118px;background:linear-gradient(135deg,var(--blue-dark),var(--blue-light));}
-  .tile .thumb.t2{background:linear-gradient(135deg,#00695c,#26a69a);}
-  .tile .thumb.t3{background:linear-gradient(135deg,#4527a0,#7e57c2);}
-  .tile .thumb.t4{background:linear-gradient(135deg,#004d7a,#0091ea);}
-  .tile .thumb.t5{background:linear-gradient(135deg,#b71c1c,#ef5350);}
-  .tile .thumb.t6{background:linear-gradient(135deg,#e65100,#ffa726);}
+  .tile .thumb{
+    height:140px;overflow:hidden;background:#e8f1fd;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .tile .thumb img{
+    width:100%;height:100%;object-fit:cover;display:block;
+  }
   .tile .body{padding:16px 16px 18px;display:flex;flex-direction:column;gap:10px;flex:1;}
   .tile h4{font-size:16px;color:var(--navy);font-weight:700;}
   .tile p{font-size:13.5px;color:var(--muted);flex:1;}
@@ -205,7 +206,11 @@
     align-self:flex-start;font-size:12px;font-weight:800;letter-spacing:.7px;
     color:var(--blue);text-decoration:none;text-transform:uppercase;
   }
-  @media(max-width:860px){.tiles{grid-template-columns:repeat(2,1fr);}}
+  .shot img{width:100%;height:auto;display:block;object-fit:contain;max-height:340px;}
+  @media(max-width:860px){
+    .prod .row,.prod.rev .row{grid-template-columns:1fr;direction:ltr;gap:22px;}
+    .tiles{grid-template-columns:repeat(2,1fr);}
+  }
   @media(max-width:560px){.tiles{grid-template-columns:1fr;}}
 
   /* ---------- Bottom CTA + footer ---------- */
@@ -342,12 +347,10 @@
         <h2>Aadhaar Offline Verification (OVSE)</h2>
         <p>Aadhaar XML or Aadhaar e-KYC verification without exposing the full Aadhaar number — ideal for onboarding, KYC and identity checks where privacy and compliance matter.</p>
         <p>Works with primary or secondary verification flows, supports bulk verification and integrates through simple REST APIs into your existing systems.</p>
-        <a class="more" href="https://www.bioenabletech.com" target="_blank" rel="noopener">More details &rarr;</a>
+        <a class="more" href="https://www.bioenabletech.com/aadhaar-offline-verification-ovse" target="_blank" rel="noopener">More details &rarr;</a>
       </div>
       <div class="shot">
-        <!-- Image path from GitHub: tracking/images/ovse.png -->
-        <img src="images/ovse.png" alt="Aadhaar Offline Verification (OVSE)"
-             onerror="this.style.display='none';this.parentNode.innerHTML='<div class=ph>OVSE PRODUCT SCREENS</div>';">
+        <img src="images/ovse.png" alt="Aadhaar Offline Verification (OVSE)">
       </div>
     </div>
   </div>
@@ -360,12 +363,10 @@
         <h2>CamBlocker Camera Access Control</h2>
         <p>Automatically control camera access on managed devices. Enforce camera policies by location, network or time to prevent unauthorised photography inside secure zones.</p>
         <p>Designed for enterprise security, manufacturing plants, R&amp;D centres and government facilities that need strict device-level control.</p>
-        <a class="more" href="https://www.bioenabletech.com" target="_blank" rel="noopener">More details &rarr;</a>
+        <a class="more" href="https://www.bioenabletech.com/camblocker-intelligent-camera-access-control-for-secure-premises" target="_blank" rel="noopener">More details &rarr;</a>
       </div>
       <div class="shot">
-        <!-- Image path from GitHub: tracking/images/camblocker.png -->
-        <img src="images/camblocker.png" alt="CamBlocker Camera Access Control"
-             onerror="this.style.display='none';this.parentNode.innerHTML='<div class=ph>CAMBLOCKER APP SCREENS</div>';">
+        <img src="images/camblocker.png" alt="CamBlocker Camera Access Control">
       </div>
     </div>
   </div>
@@ -378,12 +379,10 @@
         <h2>AI Agent Assistant for Workspace</h2>
         <p>An AI assistant that connects to your workspace — email, documents, sheets and internal knowledge — to answer questions, summarise information and automate repetitive work.</p>
         <p>Deploy for sales, support or operations teams and reduce time spent on manual research and data entry.</p>
-        <a class="more" href="https://www.bioenabletech.com" target="_blank" rel="noopener">More details &rarr;</a>
+        <a class="more" href="https://www.bioenabletech.com/bioenable-smart-agent-for-workspace" target="_blank" rel="noopener">More details &rarr;</a>
       </div>
       <div class="shot">
-        <!-- Image path from GitHub: tracking/images/ai-agent.png -->
-        <img src="images/ai-agent.png" alt="AI Agent Assistant for Workspace"
-             onerror="this.style.display='none';this.parentNode.innerHTML='<div class=ph>AI AGENT DASHBOARD</div>';">
+        <img src="images/agent.png" alt="AI Agent Assistant for Workspace">
       </div>
     </div>
   </div>
@@ -396,12 +395,10 @@
         <h2>AI Based CCTV Attendance System</h2>
         <p>Turn existing CCTV cameras into a touchless attendance system using face recognition — no additional hardware, no queues at the gate.</p>
         <p>Eliminates queues and manual attendance processes while giving HR accurate, real-time attendance data.</p>
-        <a class="more" href="https://www.bioenabletech.com" target="_blank" rel="noopener">More details &rarr;</a>
+        <a class="more" href="https://www.bioenabletech.com/solutions/artificial-intelligence/cctv-face-based-employee-tracking" target="_blank" rel="noopener">More details &rarr;</a>
       </div>
       <div class="shot">
-        <!-- Image path from GitHub: tracking/images/cctv-attendance.png -->
-        <img src="images/cctv-attendance.png" alt="AI Based CCTV Attendance System"
-             onerror="this.style.display='none';this.parentNode.innerHTML='<div class=ph>CCTV ATTENDANCE DASHBOARD</div>';">
+        <img src="images/ai%20attendance.png" alt="AI Based CCTV Attendance System">
       </div>
     </div>
   </div>
@@ -414,51 +411,51 @@
     <p class="lead">Biometric authentication, AI and automation solutions deployed across BFSI, government, healthcare, logistics and enterprise environments — backed by 18+ years of engineering experience.</p>
     <div class="tiles">
       <div class="tile">
-        <div class="thumb"></div>
+        <div class="thumb"><img src="images/Artificial%20Intelligence.jpg" alt="Artificial Intelligence"></div>
         <div class="body">
           <h4>Artificial Intelligence</h4>
           <p>Face recognition, video analytics and AI agents for real business workflows.</p>
-          <a class="btn" href="#enquire">More details</a>
+          <a class="btn" href="https://www.bioenabletech.com/solutions/artificial-intelligence" target="_blank" rel="noopener">More details</a>
         </div>
       </div>
       <div class="tile">
-        <div class="thumb t2"></div>
+        <div class="thumb"><img src="images/Software.png" alt="Software"></div>
         <div class="body">
           <h4>Software</h4>
           <p>Identity, KYC and verification platforms with REST API integration.</p>
-          <a class="btn" href="#enquire">More details</a>
+          <a class="btn" href="https://www.bioenabletech.com/solutions/software" target="_blank" rel="noopener">More details</a>
         </div>
       </div>
       <div class="tile">
-        <div class="thumb t3"></div>
+        <div class="thumb"><img src="images/Healthcare.png" alt="Healthcare"></div>
         <div class="body">
           <h4>Healthcare</h4>
           <p>Patient identification and record matching using biometrics.</p>
-          <a class="btn" href="#enquire">More details</a>
+          <a class="btn" href="https://www.bioenabletech.com/solutions/healthcare/bioenable-healthcare-solutions" target="_blank" rel="noopener">More details</a>
         </div>
       </div>
       <div class="tile">
-        <div class="thumb t4"></div>
+        <div class="thumb"><img src="images/Door%20Controller.jpg" alt="Door Controller"></div>
         <div class="body">
           <h4>Door Controller</h4>
           <p>Access control hardware with biometric and card authentication.</p>
-          <a class="btn" href="#enquire">More details</a>
+          <a class="btn" href="https://www.bioenabletech.com/solutions/door-controller" target="_blank" rel="noopener">More details</a>
         </div>
       </div>
       <div class="tile">
-        <div class="thumb t5"></div>
+        <div class="thumb"><img src="images/Logistics%20Solutions.png" alt="Logistics Solutions"></div>
         <div class="body">
           <h4>Logistics Solutions</h4>
           <p>Driver verification, proof of delivery and workforce attendance.</p>
-          <a class="btn" href="#enquire">More details</a>
+          <a class="btn" href="https://www.bioenabletech.com/biometric/logistics-transportation-solutions" target="_blank" rel="noopener">More details</a>
         </div>
       </div>
       <div class="tile">
-        <div class="thumb t6"></div>
+        <div class="thumb"><img src="images/Government%20%26%20NGOs.jpg" alt="Government and NGOs"></div>
         <div class="body">
           <h4>Government &amp; NGOs</h4>
           <p>Beneficiary de-duplication and large-scale enrolment projects.</p>
-          <a class="btn" href="#enquire">More details</a>
+          <a class="btn" href="https://www.bioenabletech.com/solutions/government-ngos" target="_blank" rel="noopener">More details</a>
         </div>
       </div>
     </div>
@@ -486,7 +483,7 @@
   // ZOHO-ONLY LEAD PUSH (no PHP on this campaign landing page)
   // ⚠️ Paste your CURRENT Apps Script Web App /exec URL below.
   // ============================================================
-  var APPS_SCRIPT_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyu90LhaAADoN1cAD5jgmajnBCzrRL_SZLuU7ZBYom4CiqMqB-NGozgZFKYXIpb9aM9A/exec";
+  var APPS_SCRIPT_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxu2-EB6xw7-Oui5K9J-qZ2A0jjkgiW6tB3qbnVeRMYnFPpDLo2SmsykDW-g2S4zHGmZg/exec";
   var WHATSAPP_NUMBER = "919075010016";
 
   var UTM_KEYS = ['utm_source','utm_medium','utm_campaign','utm_content'];
@@ -637,7 +634,7 @@
     isSubmitting = false;
     var btn = document.getElementById('submit_btn');
     btn.disabled = false;
-    btn.textContent = currentMode === 'demo' ? 'Book Demo' : 'Submit Inquiry';ovs
+    btn.textContent = currentMode === 'demo' ? 'Book Demo' : 'Submit Inquiry';
     ['name','phone','email','company','message'].forEach(function(id){
       document.getElementById(id).value = '';
     });
