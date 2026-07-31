@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BioEnable Software Solutions — Enquire or Book a Demo</title>
+<meta name="description" content="Aadhaar Offline Verification (OVSE), CamBlocker Camera Access Control, AI Agent Assistant and AI based CCTV Attendance from BioEnable Technologies.">
+<style>
+  :root{
+    --navy:#0a1f44;
+    --blue:#1565c0;
+    --blue-dark:#0d47a1;
+    --blue-light:#1e88e5;
+    --ink:#233043;
+    --muted:#5b6b7f;
+    --line:#e3e9f2;
+    --bg-alt:#f5f8fc;
+    --radius:14px;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Segoe UI',Roboto,Arial,sans-serif;
+    color:var(--ink);
+    background:#fff;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1120px;margin:0 auto;padding:0 20px;}
+  a{color:var(--blue);}
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    background:#fff;
+    border-bottom:1px solid var(--line);
+    position:sticky;top:0;z-index:50;
+  }
+  .topbar .wrap{
+    display:flex;align-items:center;justify-content:space-between;
+    height:64px;gap:16px;
+  }
+  .logo{
+    display:flex;align-items:center;gap:9px;
+    font-size:19px;font-weight:800;color:var(--navy);
+    letter-spacing:.3px;text-decoration:none;
+  }
+  .logo .mark{
+    width:30px;height:30px;border-radius:8px;
+    background:linear-gradient(135deg,var(--blue-dark),var(--blue-light));
+    display:grid;place-items:center;color:#fff;font-size:15px;
+  }
+  .topnav{display:flex;gap:22px;font-size:14px;}
+  .topnav a{color:var(--muted);text-decoration:none;font-weight:600;}
+  .topnav a:hover{color:var(--blue);}
+  .topbar .cta{
+    background:linear-gradient(90deg,var(--blue-dark),var(--blue-light));
+    color:#fff;text-decoration:none;font-weight:700;font-size:14px;
+    padding:10px 18px;border-radius:8px;white-space:nowrap;
+  }
+  @media(max-width:860px){.topnav{display:none;}}
+
+  /* ---------- Hero banner (matches site header band) ---------- */
+  .hero{
+    background:
+      radial-gradient(900px 320px at 78% 20%, rgba(30,136,229,.45), transparent 60%),
+      linear-gradient(135deg,#061530 0%,#0a1f44 45%,#123a75 100%);
+    color:#fff;
+    padding:52px 0 46px;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero::after{
+    content:"";position:absolute;inset:0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);
+    background-size:46px 46px;
+    opacity:.5;
+  }
+  .hero .wrap{position:relative;z-index:1;}
+  .hero h1{
+    font-size:38px;font-weight:800;letter-spacing:.4px;line-height:1.25;
+  }
+  .hero .rule{
+    width:130px;height:4px;border-radius:3px;margin:16px auto 14px;
+    background:linear-gradient(90deg,#42a5f5,#90caf9);
+  }
+  .hero p{color:#c9dcf5;font-size:16px;max-width:720px;margin:0 auto;}
+  @media(max-width:640px){.hero h1{font-size:27px;}}
+
+  /* ---------- Inquiry form (top of page) ---------- */
+  .form-section{background:var(--bg-alt);padding:44px 0;border-bottom:1px solid var(--line);}
+  .form-card{
+    background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:0 14px 40px rgba(10,31,68,.10);
+    display:grid;grid-template-columns:320px 1fr;overflow:hidden;
+  }
+  .form-left{
+    background:linear-gradient(160deg,var(--blue-dark) 0%,var(--blue) 100%);
+    color:#fff;padding:34px 28px;display:flex;flex-direction:column;gap:20px;
+  }
+  .form-left h2{font-size:22px;font-weight:700;line-height:1.35;}
+  .form-left p{font-size:14px;color:#c8e0fb;}
+  .ticks{list-style:none;display:flex;flex-direction:column;gap:10px;font-size:14px;color:#e6f2ff;}
+  .ticks li{display:flex;gap:9px;align-items:flex-start;}
+  .ticks li span{color:#7fc4ff;font-weight:700;}
+  .tabs{display:flex;background:rgba(255,255,255,.14);border-radius:10px;padding:4px;gap:4px;margin-top:auto;}
+  .tab-btn{
+    flex:1;padding:9px 0;border:0;background:transparent;color:#cfe4ff;
+    font-size:14px;font-weight:700;cursor:pointer;border-radius:7px;font-family:inherit;
+  }
+  .tab-btn.active{background:#fff;color:var(--blue-dark);}
+
+  .form-right{padding:34px 32px;}
+  .form-right h3{font-size:22px;color:var(--blue-dark);font-weight:700;}
+  .form-right .sub{font-size:14px;color:var(--muted);margin-bottom:20px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .fg{margin-bottom:14px;}
+  label{
+    display:block;font-size:11.5px;font-weight:700;color:#3b4a5e;
+    text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;
+  }
+  .fc{
+    width:100%;padding:11px 13px;border:1.6px solid #dfe6f0;border-radius:9px;
+    font-size:15px;color:var(--ink);background:#fbfdff;outline:none;font-family:inherit;
+    transition:border-color .15s,box-shadow .15s,background .15s;
+  }
+  textarea.fc{min-height:92px;resize:vertical;}
+  .fc:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(21,101,192,.13);}
+  .err{color:#d32f2f;font-size:12px;margin-top:5px;display:none;}
+  .submit-btn{
+    width:100%;padding:14px;border:0;border-radius:10px;cursor:pointer;
+    background:linear-gradient(90deg,var(--blue-dark),var(--blue-light));
+    color:#fff;font-size:16px;font-weight:700;letter-spacing:.3px;font-family:inherit;
+    margin-top:4px;
+  }
+  .submit-btn:hover{opacity:.93;}
+  .submit-btn:disabled{background:#94a3b4;cursor:not-allowed;}
+  .privacy{font-size:11.5px;color:#8b99a9;margin-top:11px;text-align:center;}
+
+  .success{display:none;text-align:center;padding:26px 8px;}
+  .success .ic{font-size:48px;}
+  .success h4{font-size:21px;color:var(--blue);margin:12px 0 7px;}
+  .success p{font-size:14px;color:var(--muted);margin-bottom:22px;}
+  .wa{
+    display:inline-flex;align-items:center;gap:9px;background:#25D366;color:#fff;
+    font-weight:700;font-size:15px;padding:12px 26px;border-radius:50px;text-decoration:none;
+    box-shadow:0 8px 22px rgba(37,211,102,.32);
+  }
+  @media(max-width:880px){
+    .form-card{grid-template-columns:1fr;}
+    .tabs{margin-top:6px;}
+  }
+  @media(max-width:560px){.grid2{grid-template-columns:1fr;}.form-right{padding:26px 20px;}}
+
+  /* ---------- Product sections (match site style) ---------- */
+  .prod{padding:46px 0;border-bottom:1px solid var(--line);}
+  .prod:nth-of-type(even){background:var(--bg-alt);}
+  .prod .row{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;}
+  .prod.rev .row{direction:rtl;}
+  .prod.rev .row > *{direction:ltr;}
+  .prod h2{
+    font-size:24px;font-weight:700;color:var(--navy);
+    display:inline-block;border-bottom:3px solid var(--blue);
+    padding-bottom:7px;margin-bottom:15px;
+  }
+  .prod p{color:var(--muted);font-size:15px;margin-bottom:13px;}
+  .prod .more{
+    display:inline-block;margin-top:6px;font-weight:700;font-size:14px;
+    color:var(--blue);text-decoration:none;
+  }
+  .prod .more:hover{text-decoration:underline;}
+  .shot{
+    border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);
+    background:linear-gradient(135deg,#e8f1fd,#f7fbff);
+    min-height:230px;display:grid;place-items:center;
+  }
+  .shot img{width:100%;height:auto;display:block;}
+  .shot .ph{color:#8fa8c6;font-size:13px;font-weight:700;letter-spacing:.6px;text-align:center;padding:20px;}
+  @media(max-width:860px){
+    .prod .row,.prod.rev .row{grid-template-columns:1fr;direction:ltr;gap:22px;}
+  }
+
+  /* ---------- Category tiles ---------- */
+  .cats{padding:48px 0;}
+  .cats h2{font-size:25px;color:var(--navy);font-weight:700;margin-bottom:6px;}
+  .cats .lead{color:var(--muted);font-size:15px;margin-bottom:26px;max-width:820px;}
+  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  .tile{
+    border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:#fff;
+    display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s;
+  }
+  .tile:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(10,31,68,.10);}
+  .tile .thumb{
+    height:140px;overflow:hidden;background:#e8f1fd;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .tile .thumb img{
+    width:100%;height:100%;object-fit:cover;display:block;
+  }
+  .tile .body{padding:16px 16px 18px;display:flex;flex-direction:column;gap:10px;flex:1;}
+  .tile h4{font-size:16px;color:var(--navy);font-weight:700;}
+  .tile p{font-size:13.5px;color:var(--muted);flex:1;}
+  .tile .btn{
+    align-self:flex-start;font-size:12px;font-weight:800;letter-spacing:.7px;
+    color:var(--blue);text-decoration:none;text-transform:uppercase;
+  }
+  .shot img{width:100%;height:auto;display:block;object-fit:contain;max-height:340px;}
+  @media(max-width:860px){
+    .prod .row,.prod.rev .row{grid-template-columns:1fr;direction:ltr;gap:22px;}
+    .tiles{grid-template-columns:repeat(2,1fr);}
+  }
+  @media(max-width:560px){.tiles{grid-template-columns:1fr;}}
+
+  /* ---------- Bottom CTA + footer ---------- */
+  .bottom-cta{
+    background:linear-gradient(135deg,#0a1f44,#123a75);
+    color:#fff;padding:42px 0;text-align:center;
+  }
+  .bottom-cta h2{font-size:25px;font-weight:700;margin-bottom:9px;}
+  .bottom-cta p{color:#c4d8f2;font-size:15px;margin-bottom:20px;}
+  .bottom-cta a{
+    display:inline-block;background:#fff;color:var(--blue-dark);font-weight:800;
+    padding:13px 30px;border-radius:9px;text-decoration:none;font-size:15px;
+  }
+  footer{background:#061530;color:#8fa6c4;padding:26px 0;font-size:13px;}
+  footer .wrap{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;}
+  footer strong{color:#dbe8f8;}
+</style>
+</head>
+<body>
+
+<!-- ================= TOP BAR ================= -->
+<div class="topbar">
+  <div class="wrap">
+    <a class="logo" href="https://www.bioenabletech.com" target="_blank" rel="noopener">
+      <span class="mark">B</span> BioEnable
+    </a>
+    <nav class="topnav">
+      <a href="#ovse">OVSE</a>
+      <a href="#camblocker">CamBlocker</a>
+      <a href="#aiagent">AI Agent</a>
+      <a href="#attendance">CCTV Attendance</a>
+      <a href="#solutions">Solutions</a>
+    </nav>
+    <a class="cta" href="#enquire">Enquire Now</a>
+  </div>
+</div>
+
+<!-- ================= HERO ================= -->
+<section class="hero">
+  <div class="wrap">
+    <h1>BioEnable Software Solutions</h1>
+    <div class="rule"></div>
+    <p>Aadhaar Offline Verification, Camera Access Control, AI Agent Assistant and AI based CCTV Attendance — built for enterprises, government and BFSI.</p>
+  </div>
+</section>
+
+<!-- ================= INQUIRY FORM (TOP) ================= -->
+<section class="form-section" id="enquire">
+  <div class="wrap">
+    <div class="form-card">
+
+      <div class="form-left">
+        <h2>Talk to our solution experts</h2>
+        <p>Share your requirement and our team will get back to you with pricing, documentation and a live walkthrough.</p>
+        <ul class="ticks">
+          <li><span>&#10003;</span> Aadhaar Offline Verification (OVSE)</li>
+          <li><span>&#10003;</span> CamBlocker Camera Access Control</li>
+          <li><span>&#10003;</span> AI Agent Assistant for Workspace</li>
+          <li><span>&#10003;</span> AI based CCTV Attendance</li>
+        </ul>
+        <div class="tabs">
+          <button class="tab-btn active" type="button" onclick="switchTab('inquiry',this)">Inquiry</button>
+          <button class="tab-btn" type="button" onclick="switchTab('demo',this)">Book Demo</button>
+        </div>
+      </div>
+
+      <div class="form-right">
+        <h3 id="form-title">Send an Inquiry</h3>
+        <p class="sub" id="form-sub">Fill in your details and we'll get back to you shortly.</p>
+
+        <!-- SUCCESS -->
+        <div class="success" id="success-card">
+          <div class="ic">&#9989;</div>
+          <h4 id="success-title">Submitted Successfully!</h4>
+          <p id="success-sub">Your inquiry has been received. Click below for instant WhatsApp assistance.</p>
+          <a class="wa" id="wa-link" href="#" target="_blank" rel="noopener">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Chat on WhatsApp
+          </a>
+        </div>
+
+        <!-- FORM -->
+        <div id="main-form">
+          <input type="hidden" id="utm_source">
+          <input type="hidden" id="utm_medium">
+          <input type="hidden" id="utm_campaign">
+          <input type="hidden" id="utm_content">
+
+          <div class="grid2">
+            <div class="fg">
+              <label for="name">Full Name</label>
+              <input class="fc" id="name" type="text" placeholder="John Doe" autocomplete="name">
+              <div class="err" id="name_error">Please enter your name.</div>
+            </div>
+            <div class="fg">
+              <label for="phone">Phone Number</label>
+              <input class="fc" id="phone" type="text" placeholder="+91 98765 43210" autocomplete="tel">
+              <div class="err" id="mobile_error">Please enter your contact number.</div>
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div class="fg">
+              <label for="email">Email Address</label>
+              <input class="fc" id="email" type="text" placeholder="you@company.com" autocomplete="email">
+              <div class="err" id="email_error">Please enter a valid email address.</div>
+            </div>
+            <div class="fg">
+              <label for="company">Company (optional)</label>
+              <input class="fc" id="company" type="text" placeholder="Company name" autocomplete="organization">
+            </div>
+          </div>
+
+          <div class="fg">
+            <label for="message" id="msg-label">Requirements</label>
+            <textarea class="fc" id="message" placeholder="Describe your requirements…"></textarea>
+            <div class="err" id="message_error">Please enter your requirements.</div>
+          </div>
+
+          <button class="submit-btn" id="submit_btn" type="button" onclick="frmValidation()">Submit Inquiry</button>
+          <p class="privacy">Your details are shared only with the BioEnable sales team.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ================= PRODUCTS ================= -->
+<section class="prod" id="ovse">
+  <div class="wrap">
+    <div class="row">
+      <div>
+        <h2>Aadhaar Offline Verification (OVSE)</h2>
+        <p>Aadhaar XML or Aadhaar e-KYC verification without exposing the full Aadhaar number — ideal for onboarding, KYC and identity checks where privacy and compliance matter.</p>
+        <p>Works with primary or secondary verification flows, supports bulk verification and integrates through simple REST APIs into your existing systems.</p>
+        <a class="more" href="https://www.bioenabletech.com/aadhaar-offline-verification-ovse" target="_blank" rel="noopener">More details &rarr;</a>
+      </div>
+      <div class="shot">
+        <img src="images/ovse.png" alt="Aadhaar Offline Verification (OVSE)">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="prod rev" id="camblocker">
+  <div class="wrap">
+    <div class="row">
+      <div>
+        <h2>CamBlocker Camera Access Control</h2>
+        <p>Automatically control camera access on managed devices. Enforce camera policies by location, network or time to prevent unauthorised photography inside secure zones.</p>
+        <p>Designed for enterprise security, manufacturing plants, R&amp;D centres and government facilities that need strict device-level control.</p>
+        <a class="more" href="https://www.bioenabletech.com/camblocker-intelligent-camera-access-control-for-secure-premises" target="_blank" rel="noopener">More details &rarr;</a>
+      </div>
+      <div class="shot">
+        <img src="images/camblocker.png" alt="CamBlocker Camera Access Control">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="prod" id="aiagent">
+  <div class="wrap">
+    <div class="row">
+      <div>
+        <h2>AI Agent Assistant for Workspace</h2>
+        <p>An AI assistant that connects to your workspace — email, documents, sheets and internal knowledge — to answer questions, summarise information and automate repetitive work.</p>
+        <p>Deploy for sales, support or operations teams and reduce time spent on manual research and data entry.</p>
+        <a class="more" href="https://www.bioenabletech.com/bioenable-smart-agent-for-workspace" target="_blank" rel="noopener">More details &rarr;</a>
+      </div>
+      <div class="shot">
+        <img src="images/agent.png" alt="AI Agent Assistant for Workspace">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="prod rev" id="attendance">
+  <div class="wrap">
+    <div class="row">
+      <div>
+        <h2>AI Based CCTV Attendance System</h2>
+        <p>Turn existing CCTV cameras into a touchless attendance system using face recognition — no additional hardware, no queues at the gate.</p>
+        <p>Eliminates queues and manual attendance processes while giving HR accurate, real-time attendance data.</p>
+        <a class="more" href="https://www.bioenabletech.com/solutions/artificial-intelligence/cctv-face-based-employee-tracking" target="_blank" rel="noopener">More details &rarr;</a>
+      </div>
+      <div class="shot">
+        <img src="images/ai%20attendance.png" alt="AI Based CCTV Attendance System">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CATEGORY TILES ================= -->
+<section class="cats" id="solutions">
+  <div class="wrap">
+    <h2>Our Innovative Solutions</h2>
+    <p class="lead">Biometric authentication, AI and automation solutions deployed across BFSI, government, healthcare, logistics and enterprise environments — backed by 18+ years of engineering experience.</p>
+    <div class="tiles">
+      <div class="tile">
+        <div class="thumb"><img src="images/Artificial%20Intelligence.jpg" alt="Artificial Intelligence"></div>
+        <div class="body">
+          <h4>Artificial Intelligence</h4>
+          <p>Face recognition, video analytics and AI agents for real business workflows.</p>
+          <a class="btn" href="https://www.bioenabletech.com/solutions/artificial-intelligence" target="_blank" rel="noopener">More details</a>
+        </div>
+      </div>
+      <div class="tile">
+        <div class="thumb"><img src="images/Software.png" alt="Software"></div>
+        <div class="body">
+          <h4>Software</h4>
+          <p>Identity, KYC and verification platforms with REST API integration.</p>
+          <a class="btn" href="https://www.bioenabletech.com/solutions/software" target="_blank" rel="noopener">More details</a>
+        </div>
+      </div>
+      <div class="tile">
+        <div class="thumb"><img src="images/Healthcare.png" alt="Healthcare"></div>
+        <div class="body">
+          <h4>Healthcare</h4>
+          <p>Patient identification and record matching using biometrics.</p>
+          <a class="btn" href="https://www.bioenabletech.com/solutions/healthcare/bioenable-healthcare-solutions" target="_blank" rel="noopener">More details</a>
+        </div>
+      </div>
+      <div class="tile">
+        <div class="thumb"><img src="images/Door%20Controller.jpg" alt="Door Controller"></div>
+        <div class="body">
+          <h4>Door Controller</h4>
+          <p>Access control hardware with biometric and card authentication.</p>
+          <a class="btn" href="https://www.bioenabletech.com/solutions/door-controller" target="_blank" rel="noopener">More details</a>
+        </div>
+      </div>
+      <div class="tile">
+        <div class="thumb"><img src="images/Logistics%20Solutions.png" alt="Logistics Solutions"></div>
+        <div class="body">
+          <h4>Logistics Solutions</h4>
+          <p>Driver verification, proof of delivery and workforce attendance.</p>
+          <a class="btn" href="https://www.bioenabletech.com/biometric/logistics-transportation-solutions" target="_blank" rel="noopener">More details</a>
+        </div>
+      </div>
+      <div class="tile">
+        <div class="thumb"><img src="images/Government%20%26%20NGOs.jpg" alt="Government and NGOs"></div>
+        <div class="body">
+          <h4>Government &amp; NGOs</h4>
+          <p>Beneficiary de-duplication and large-scale enrolment projects.</p>
+          <a class="btn" href="https://www.bioenabletech.com/solutions/government-ngos" target="_blank" rel="noopener">More details</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= BOTTOM CTA ================= -->
+<section class="bottom-cta">
+  <div class="wrap">
+    <h2>Ready to see it in action?</h2>
+    <p>Book a free demo with our product specialists — typically within 24 working hours.</p>
+    <a href="#enquire">Book a Free Demo</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div><strong>BioEnable Technologies Pvt. Ltd.</strong> &nbsp;·&nbsp; Magarpatta City, Hadapsar, Pune 411013</div>
+    <div>+91 8600102062 / 8600010820</div>
+  </div>
+</footer>
+
+<script>
+  // ============================================================
+  // ZOHO-ONLY LEAD PUSH (no PHP on this campaign landing page)
+  // ⚠️ Paste your CURRENT Apps Script Web App /exec URL below.
+  // ============================================================
+  var APPS_SCRIPT_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyu90LhaAADoN1cAD5jgmajnBCzrRL_SZLuU7ZBYom4CiqMqB-NGozgZFKYXIpb9aM9A/exec";
+  var WHATSAPP_NUMBER = "919075010016";
+
+  var UTM_KEYS = ['utm_source','utm_medium','utm_campaign','utm_content'];
+  var isSubmitting = false;
+  var currentMode = 'inquiry';
+
+  // This page is TOP-LEVEL (not a Google Sites iframe), so UTMs are readable here.
+  document.addEventListener('DOMContentLoaded', function(){
+    var p = new URLSearchParams(window.location.search);
+    UTM_KEYS.forEach(function(k){
+      var el = document.getElementById(k);
+      var v = (p.get(k) || '').trim();
+      if (v) {
+        el.value = v;
+        try { sessionStorage.setItem('be_' + k, v); } catch(e){}
+      } else {
+        try { el.value = sessionStorage.getItem('be_' + k) || ''; } catch(e){ el.value = ''; }
+      }
+    });
+    console.log('[BioEnable Landing] UTMs:', {
+      source:   document.getElementById('utm_source').value,
+      medium:   document.getElementById('utm_medium').value,
+      campaign: document.getElementById('utm_campaign').value,
+      content:  document.getElementById('utm_content').value
+    });
+  });
+
+  function switchTab(mode, btn){
+    currentMode = mode;
+    Array.prototype.forEach.call(document.querySelectorAll('.tab-btn'), function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    if (mode === 'demo') {
+      document.getElementById('form-title').textContent = 'Book a Free Demo';
+      document.getElementById('form-sub').textContent   = 'Schedule a live demo with our product specialists.';
+      document.getElementById('msg-label').textContent  = 'Product / Use Case';
+      document.getElementById('message').placeholder    = 'Which product would you like a demo for?';
+      document.getElementById('submit_btn').textContent = 'Book Demo';
+    } else {
+      document.getElementById('form-title').textContent = 'Send an Inquiry';
+      document.getElementById('form-sub').textContent   = "Fill in your details and we'll get back to you shortly.";
+      document.getElementById('msg-label').textContent  = 'Requirements';
+      document.getElementById('message').placeholder    = 'Describe your requirements…';
+      document.getElementById('submit_btn').textContent = 'Submit Inquiry';
+    }
+  }
+
+  // sendBeacon / fetch(no-cors) do NOT follow Apps Script 302 redirects.
+  // Image pixel + hidden iframe GET do.
+  function pushToZoho(payload){
+    var qs = Object.keys(payload).map(function(k){
+      return encodeURIComponent(k) + '=' + encodeURIComponent(payload[k] == null ? '' : payload[k]);
+    }).join('&');
+    var url = APPS_SCRIPT_WEBAPP_URL + (APPS_SCRIPT_WEBAPP_URL.indexOf('?') >= 0 ? '&' : '?') + qs + '&_t=' + Date.now();
+
+    console.log('[BioEnable Landing] Zoho push →', url);
+
+    try {
+      var img = new Image();
+      img.referrerPolicy = 'no-referrer-when-downgrade';
+      img.src = url;
+    } catch(e){}
+
+    try {
+      var f = document.createElement('iframe');
+      f.style.cssText = 'display:none;width:0;height:0;border:0;';
+      f.src = url;
+      document.body.appendChild(f);
+      setTimeout(function(){ try{ document.body.removeChild(f); }catch(e){} }, 8000);
+    } catch(e){}
+  }
+
+  function showErr(id, msg){
+    var el = document.getElementById(id);
+    if (msg) el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function frmValidation(){
+    if (isSubmitting) return;
+
+    var name    = document.getElementById('name').value.trim();
+    var phone   = document.getElementById('phone').value.trim();
+    var email   = document.getElementById('email').value.trim();
+    var company = document.getElementById('company').value.trim();
+    var message = document.getElementById('message').value.trim();
+
+    ['email_error','name_error','mobile_error','message_error'].forEach(function(id){
+      document.getElementById(id).style.display = 'none';
+    });
+
+    var emailPat = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!name)                 { showErr('name_error');   return; }
+    if (!email)                { showErr('email_error', 'Please enter your email address.'); return; }
+    if (!emailPat.test(email)) { showErr('email_error', 'Please enter a valid email address.'); return; }
+    if (!phone)                { showErr('mobile_error'); return; }
+    if (!message)              { showErr('message_error');return; }
+
+    isSubmitting = true;
+    var btn = document.getElementById('submit_btn');
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+
+    var utms = {};
+    UTM_KEYS.forEach(function(k){ utms[k] = document.getElementById(k).value.trim(); });
+
+    // Campaign landing page → always push to Zoho.
+    // Fall back to youtube/video so a lead is never lost if UTMs were stripped.
+    pushToZoho({
+      email:        email,
+      name:         name,
+      phone:        phone,
+      company:      company,
+      message:      message,
+      mode:         currentMode,
+      cid:          'YT_LANDING',
+      utm_source:   utms.utm_source   || 'youtube',
+      utm_medium:   utms.utm_medium   || 'video',
+      utm_campaign: utms.utm_campaign || 'CMP-YT-GENERAL',
+      utm_content:  utms.utm_content  || 'YT_LANDING_FORM'
+    });
+
+    showSuccess(name, email, phone, message);
+  }
+
+  function showSuccess(name, email, phone, message){
+    var lines = [
+      currentMode === 'demo' ? 'Demo Booking – BioEnableTech' : 'Inquiry For BioEnableTech',
+      '', 'Name: ' + name, 'Email: ' + email, 'Phone: ' + phone,
+      'Message: ' + message, '', 'Time: ' + new Date().toLocaleString()
+    ];
+    document.getElementById('wa-link').href =
+      'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(lines.join('\n'));
+
+    if (currentMode === 'demo') {
+      document.getElementById('success-title').textContent = 'Demo Booked!';
+      document.getElementById('success-sub').textContent   = "We'll confirm your demo slot shortly.";
+    } else {
+      document.getElementById('success-title').textContent = 'Submitted Successfully!';
+      document.getElementById('success-sub').textContent   = 'Your inquiry has been received.';
+    }
+
+    document.getElementById('main-form').style.display = 'none';
+    document.getElementById('success-card').style.display = 'block';
+    setTimeout(resetForm, 20000);
+  }
+
+  function resetForm(){
+    isSubmitting = false;
+    var btn = document.getElementById('submit_btn');
+    btn.disabled = false;
+    btn.textContent = currentMode === 'demo' ? 'Book Demo' : 'Submit Inquiry';
+    ['name','phone','email','company','message'].forEach(function(id){
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('main-form').style.display = 'block';
+    document.getElementById('success-card').style.display = 'none';
+  }
+</script>
+</body>
+</html>
