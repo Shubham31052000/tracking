@@ -1,175 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Redirecting...</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding-top: 60px; color: #444; margin: 0; }
-    </style>
-</head>
-<body>
-    <p>Redirecting to BioEnable Technologies...</p>
+// ============================================================
+// 6) getCampaignByIdAnyStatus_ — ADD (for Test Send attachments)
+// ============================================================
+function getCampaignByIdAnyStatus_(campaignId) {
+  var data = SpreadsheetApp.openById(SHEET_ID)
+    .getSheetByName('Campaign_Config').getDataRange().getValues();
 
-    <script>
-        (function () {
-            // ============================================================
-            // BioEnable Tracking Redirect v2 — FIXED
-            // Fixes:
-            //  1. Do NOT use cmp UUID as utm_campaign
-            //  2. Do NOT default missing UTMs to newsletter/email
-            //     (breaks YouTube / Ads anonymous visitors)
-            //  3. Append UTMs onto the landing-page URL so the inquiry
-            //     form can read them
-            //  4. Image-pixel + iframe beacon (sendBeacon fails on GAS 302)
-            //  5. Allowlist redirect host to *.bioenabletech.com
-            // ============================================================
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    var id  = row[0] ? row[0].toString().trim() : '';
+    if (id !== campaignId) continue;
 
-            // ⚠️ After Apps Script redeploy, paste the NEW /exec URL here
-            var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxu2-EB6xw7-Oui5K9J-qZ2A0jjkgiW6tB3qbnVeRMYnFPpDLo2SmsykDW-g2S4zHGmZg/exec";
+    var campaignCode = (row.length > 11 && row[11] && row[11].toString().trim() !== '')
+      ? row[11].toString().trim()
+      : ('NL-' + id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase());
 
-            var ALLOWED_HOST_EXACT = ["bioenabletech.com", "www.bioenabletech.com"];
-            var ALLOWED_HOST_SUFFIX = ".bioenabletech.com"; // ovse.bioenabletech.com etc.
-            var FALLBACK_URL = "https://www.bioenabletech.com/";
-
-            var params = new URLSearchParams(window.location.search);
-            var cid = params.get("cid") || "";
-            var cmp = params.get("cmp") || "";
-            var email = params.get("email") || "";
-
-            // ✅ Keep blank when missing — NEVER invent newsletter defaults
-            var utm_source = (params.get("utm_source") || "").trim();
-            var utm_medium = (params.get("utm_medium") || "").trim();
-            var utm_campaign = (params.get("utm_campaign") || "").trim();
-            var utm_content = (params.get("utm_content") || "").trim();
-            var rawRedirect = params.get("redirect");
-
-            // ✅ Never treat click UUID (CMP_xxxx) as a marketing campaign code
-            if (!utm_campaign || utm_campaign === cmp || /^CMP_[0-9a-f-]{8,}$/i.test(utm_campaign)) {
-                utm_campaign = "";
-            }
-
-            // Newsletter clicks usually have email+cmp but may omit UTMs in older emails.
-            // Only then backfill newsletter defaults.
-            if (email && cmp && !utm_source && !utm_medium) {
-                utm_source = "newsletter";
-                utm_medium = "email";
-            }
-
-            // ---- Resolve + validate redirect target ----
-            var targetUrl = FALLBACK_URL;
-            if (rawRedirect && rawRedirect.trim() !== "") {
-                try {
-                    var decoded = rawRedirect;
-                    // Decode up to twice (some links are double-encoded)
-                    for (var d = 0; d < 2; d++) {
-                        try {
-                            var next = decodeURIComponent(decoded);
-                            if (next === decoded) break;
-                            decoded = next;
-                        } catch (e) { break; }
-                    }
-                    if (isAllowedRedirect(decoded)) {
-                        targetUrl = decoded;
-                    } else {
-                        console.warn("[Tracker] Blocked redirect host:", decoded);
-                        targetUrl = FALLBACK_URL;
-                    }
-                } catch (e) {
-                    targetUrl = FALLBACK_URL;
-                }
-            }
-
-            // ---- Append UTMs to landing page (critical for YouTube/Ads form) ----
-            targetUrl = appendUtms(targetUrl, {
-                utm_source: utm_source,
-                utm_medium: utm_medium,
-                utm_campaign: utm_campaign,
-                utm_content: utm_content
-            });
-
-            // ---- Fire Apps Script log only when we have something useful ----
-            // Newsletter: email present → log click + Zoho
-            // YouTube/Ads anonymous: no email → skip CRM (form will push later WITH utms on URL)
-            if (email || cmp) {
-                var qs = [
-                    "cmp=" + encodeURIComponent(cmp),
-                    "cid=" + encodeURIComponent(cid),
-                    "email=" + encodeURIComponent(email),
-                    "utm_source=" + encodeURIComponent(utm_source),
-                    "utm_medium=" + encodeURIComponent(utm_medium),
-                    "utm_campaign=" + encodeURIComponent(utm_campaign),
-                    "utm_content=" + encodeURIComponent(utm_content),
-                    "_t=" + Date.now()
-                ].join("&");
-
-                var beaconUrl = APPS_SCRIPT_URL + (APPS_SCRIPT_URL.indexOf("?") >= 0 ? "&" : "?") + qs;
-                fireAppsScriptBeacon(beaconUrl);
-            }
-
-            // ---- Instant redirect ----
-            setTimeout(function () {
-                window.location.replace(targetUrl);
-            }, 80);
-
-            // -------------------- helpers --------------------
-
-            function isAllowedRedirect(url) {
-                try {
-                    var u = new URL(url, window.location.href);
-                    if (u.protocol !== "https:" && u.protocol !== "http:") return false;
-                    var host = u.hostname.toLowerCase();
-                    if (ALLOWED_HOST_EXACT.indexOf(host) !== -1) return true;
-                    if (host.length > ALLOWED_HOST_SUFFIX.length &&
-                        host.slice(-ALLOWED_HOST_SUFFIX.length) === ALLOWED_HOST_SUFFIX) {
-                        return true;
-                    }
-                    return false;
-                } catch (e) {
-                    return false;
-                }
-            }
-
-            function appendUtms(url, utms) {
-                try {
-                    var u = new URL(url, window.location.href);
-                    Object.keys(utms).forEach(function (k) {
-                        var v = utms[k];
-                        if (v && !u.searchParams.get(k)) {
-                            u.searchParams.set(k, v);
-                        }
-                    });
-                    return u.toString();
-                } catch (e) {
-                    // Fallback string append if URL() fails
-                    var extra = [];
-                    Object.keys(utms).forEach(function (k) {
-                        if (utms[k] && url.indexOf(k + "=") === -1) {
-                            extra.push(encodeURIComponent(k) + "=" + encodeURIComponent(utms[k]));
-                        }
-                    });
-                    if (!extra.length) return url;
-                    return url + (url.indexOf("?") >= 0 ? "&" : "?") + extra.join("&");
-                }
-            }
-
-            // sendBeacon/fetch(no-cors) often fail on Apps Script 302 redirects.
-            // Image pixel + iframe GET follow redirects reliably.
-            function fireAppsScriptBeacon(url) {
-                try {
-                    var img = new Image();
-                    img.referrerPolicy = "no-referrer-when-downgrade";
-                    img.src = url;
-                } catch (e1) {}
-
-                try {
-                    var iframe = document.createElement("iframe");
-                    iframe.style.cssText = "display:none;width:0;height:0;border:0;";
-                    iframe.src = url;
-                    document.body.appendChild(iframe);
-                } catch (e2) {}
-            }
-        })();
-    </script>
-</body>
-</html>
+    return {
+      campaignId:      id,
+      campaignName:    row[1] ? row[1].toString().trim() : id,
+      campaignCode:    campaignCode,
+      knowledgeDocId:  row[3] ? row[3].toString().trim() : '',
+      defaultRedirect: row[4] ? row[4].toString().trim() : DEFAULT_REDIRECT,
+      dailyBatch:      row[5] ? parseInt(row[5]) : DAILY_TOTAL_BATCH,
+      cooldownDays:    row[6] ? parseInt(row[6]) : COOLDOWN_DAYS,
+      senderName:      row[7] ? row[7].toString().trim() : 'BioEnable Team',
+      ccEmail:         row[8] ? row[8].toString().trim() : '',
+      ctaLabel:        (row.length > 9  && row[9])  ? row[9].toString().trim()  : '',
+      attachmentId:    (row.length > 10 && row[10]) ? row[10].toString().trim() : ''
+    };
+  }
+  return null;
+}
