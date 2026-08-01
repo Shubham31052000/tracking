@@ -3,18 +3,50 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Redirecting...</title>
+    <meta name="robots" content="noindex,nofollow">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    <title>BioEnable Technologies</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding-top: 60px; color: #444; margin: 0; }
+        :root { --blue-dark:#0b3c8c; --blue-light:#2a7ade; }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            margin: 0; min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(160deg, #f5f8fd 0%, #e8eff9 100%);
+            color: #1c2b45;
+        }
+        .card { text-align: center; padding: 32px; }
+        .logo { height: 44px; width: auto; margin-bottom: 22px; }
+        .logo-fallback {
+            display: none; font-size: 22px; font-weight: 700;
+            color: var(--blue-dark); margin-bottom: 22px;
+        }
+        .spinner {
+            width: 34px; height: 34px; margin: 0 auto 18px;
+            border: 3px solid rgba(42,122,222,.22);
+            border-top-color: var(--blue-light);
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        p { margin: 0; font-size: 14px; color: #5a6b85; }
+        @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
     </style>
 </head>
 <body>
-    <p>Redirecting to BioEnable Technologies...</p>
+    <div class="card">
+        <img class="logo" src="logo.png" alt="BioEnable Technologies"
+             onerror="this.style.display='none';document.getElementById('lf').style.display='block';">
+        <div class="logo-fallback" id="lf">BioEnable Technologies</div>
+        <div class="spinner"></div>
+        <p>Taking you to BioEnable&hellip;</p>
+    </div>
 
     <script>
         (function () {
             // ============================================================
-            // BioEnable Tracking Redirect v4 — custom domain
+            // BioEnable Tracking Redirect v5 — custom domain
             // Domain: https://campaign.bioenabletech.com/
             // ============================================================
 
@@ -22,8 +54,24 @@
             var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw62GW8CXcu4-tl9HcbB39OYAqNNl2Gjut0QFPoPwutxQSHwsr4VQzcz5eeQkYnKvtivA/exec";
 
             // Default landing when someone opens the domain with NO redirect param
-            // (fixes: bare campaign.bioenabletech.com was sending people to www.bioenabletech.com/home)
             var DEFAULT_LANDING = "https://campaign.bioenabletech.com/solutions.html";
+
+            // ------------------------------------------------------------
+            // SHORT LINKS — use these in YouTube descriptions instead of a
+            // long ?redirect=... URL. Google shows its "Redirect Notice"
+            // interstitial for URLs that look like open redirectors, so the
+            // public-facing link should carry only a short code.
+            //   https://campaign.bioenabletech.com/?c=camblocker
+            // Regenerate this block from the sheet: YouTube Links > Print short-link map
+            // ------------------------------------------------------------
+            var SHORT_LINKS = {
+                "ovse":       { landing: DEFAULT_LANDING + "#ovse",       campaign: "CMP-YT-OVSE",       content: "OVSE_DEMO_VIDEO" },
+                "camblocker": { landing: DEFAULT_LANDING + "#camblocker", campaign: "CMP-YT-CAMBLOCKER", content: "CAMBLOCKER_DEMO_VIDEO" },
+                "agent":      { landing: DEFAULT_LANDING + "#aiagent",    campaign: "CMP-YT-AGENT",      content: "AGENT_DEMO_VIDEO" },
+                "attendance": { landing: DEFAULT_LANDING + "#attendance", campaign: "CMP-YT-ATTENDANCE", content: "CCTV_ATTENDANCE_DEMO_VIDEO" },
+                "ai":         { landing: DEFAULT_LANDING,                 campaign: "CMP-YT-AI",         content: "AI_SOLUTIONS_OVERVIEW" },
+                "software":   { landing: DEFAULT_LANDING,                 campaign: "CMP-YT-SOFTWARE",   content: "SOFTWARE_SOLUTIONS_OVERVIEW" }
+            };
 
             var ALLOWED_HOST_EXACT = [
                 "bioenabletech.com",
@@ -44,6 +92,17 @@
             var utm_campaign = (params.get("utm_campaign") || "").trim();
             var utm_content = (params.get("utm_content") || "").trim();
             var rawRedirect = params.get("redirect");
+
+            // Short code expands into landing + campaign + content
+            var shortCode = (params.get("c") || "").trim().toLowerCase();
+            if (shortCode && SHORT_LINKS[shortCode]) {
+                var preset = SHORT_LINKS[shortCode];
+                if (!rawRedirect) rawRedirect = preset.landing;
+                if (!utm_campaign) utm_campaign = preset.campaign;
+                if (!utm_content) utm_content = preset.content;
+                if (!utm_source) utm_source = "youtube";
+                if (!utm_medium) utm_medium = "video";
+            }
 
             // Never treat click UUID (CMP_xxxx) as marketing campaign code
             if (!utm_campaign || utm_campaign === cmp || /^CMP_[0-9a-f-]{8,}$/i.test(utm_campaign)) {
@@ -68,6 +127,7 @@
                             decoded = next;
                         } catch (e) { break; }
                     }
+                    decoded = upgradeToHttps(decoded);
                     if (isAllowedRedirect(decoded)) {
                         targetUrl = decoded;
                     } else {
@@ -110,10 +170,15 @@
                 window.location.replace(targetUrl);
             }, 80);
 
+            // http:// destinations trigger browser and Google warnings
+            function upgradeToHttps(url) {
+                return url.replace(/^http:\/\//i, "https://");
+            }
+
             function isAllowedRedirect(url) {
                 try {
                     var u = new URL(url, window.location.href);
-                    if (u.protocol !== "https:" && u.protocol !== "http:") return false;
+                    if (u.protocol !== "https:") return false;
                     var host = u.hostname.toLowerCase();
                     if (ALLOWED_HOST_EXACT.indexOf(host) !== -1) return true;
                     if (host.length > ALLOWED_HOST_SUFFIX.length &&
