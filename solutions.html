@@ -45,8 +45,9 @@
     letter-spacing:.3px;text-decoration:none;
   }
   .logo img{
-    height:36px;width:auto;display:block;
+    height:38px;width:auto;display:block;
   }
+  .logo-fallback{display:none;align-items:center;gap:9px;}
   .logo .mark{
     width:30px;height:30px;border-radius:8px;
     background:linear-gradient(135deg,var(--blue-dark),var(--blue-light));
@@ -238,10 +239,11 @@
 <div class="topbar">
   <div class="wrap">
     <a class="logo" href="https://www.bioenabletech.com" target="_blank" rel="noopener">
-      <img src="images/logo.png" alt="BioEnable"
-           onerror="this.style.display='none';this.nextElementSibling.style.display='grid';">
-      <span class="mark" style="display:none;">B</span>
-      <span>BioEnable</span>
+      <img src="logo.png" alt="BioEnable Technologies"
+           onerror="this.style.display='none';document.getElementById('logoFallback').style.display='flex';">
+      <span class="logo-fallback" id="logoFallback">
+        <span class="mark">B</span> BioEnable
+      </span>
     </a>
     <nav class="topnav">
       <a href="#ovse">OVSE</a>
