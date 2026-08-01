@@ -73,11 +73,12 @@
                 "software":   { landing: DEFAULT_LANDING,                 campaign: "CMP-YT-SOFTWARE",   content: "SOFTWARE_SOLUTIONS_OVERVIEW" }
             };
 
+            // github.io is deliberately NOT allowed — legacy links are rewritten to the
+            // branded domain below, so a visitor can never be dropped on the raw repo URL.
             var ALLOWED_HOST_EXACT = [
                 "bioenabletech.com",
                 "www.bioenabletech.com",
-                "campaign.bioenabletech.com",
-                "shubham31052000.github.io"
+                "campaign.bioenabletech.com"
             ];
             var ALLOWED_HOST_SUFFIX = ".bioenabletech.com";
             var FALLBACK_URL = DEFAULT_LANDING;
@@ -127,7 +128,7 @@
                             decoded = next;
                         } catch (e) { break; }
                     }
-                    decoded = upgradeToHttps(decoded);
+                    decoded = rewriteLegacyHost(upgradeToHttps(decoded));
                     if (isAllowedRedirect(decoded)) {
                         targetUrl = decoded;
                     } else {
@@ -173,6 +174,19 @@
             // http:// destinations trigger browser and Google warnings
             function upgradeToHttps(url) {
                 return url.replace(/^http:\/\//i, "https://");
+            }
+
+            // Links already pasted in YouTube descriptions still point at the raw
+            // GitHub Pages URL. Map them onto the branded domain instead of blocking.
+            function rewriteLegacyHost(url) {
+                try {
+                    var u = new URL(url, window.location.href);
+                    if (u.hostname.toLowerCase() !== "shubham31052000.github.io") return url;
+                    var page = u.pathname.split("/").pop() || "solutions.html";
+                    return "https://campaign.bioenabletech.com/" + page + u.search + u.hash;
+                } catch (e) {
+                    return url;
+                }
             }
 
             function isAllowedRedirect(url) {
