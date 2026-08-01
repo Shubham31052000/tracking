@@ -1,182 +1,252 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Redirecting...</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding-top: 60px; color: #444; margin: 0; }
-    </style>
-</head>
-<body>
-    <p>Redirecting to BioEnable Technologies...</p>
+// ============================================================
+// YouTubeLinks.gs — YouTube video links + click tracking sheets
+// BioEnable Technologies
+// ============================================================
+// INSTALL:
+//  1. Apps Script → + (New file) → name it YouTubeLinks.gs
+//  2. Paste this whole file → Save
+//  3. In Code.gs onOpen(), add:  ytAddMenu_();
+//  4. Reload the Sheet → menu "YouTube Links" appears
+//  5. Run: YouTube Links → Setup / Repair Sheets
+//  6. Run: YouTube Links → Generate All Video Links
+//  7. Copy column I into each YouTube video description
+// ============================================================
 
-    <script>
-        (function () {
-            // ============================================================
-            // BioEnable Tracking Redirect v3 — COMPLETE
-            // Fixes vs old v2 on GitHub:
-            //  1. Allow github.io landing pages (solutions.html)
-            //  2. Log YouTube clicks even when NO email / NO cmp
-            //  3. Pass redirect URL to Apps Script for sheet logging
-            //  4. Do NOT use cmp UUID as utm_campaign
-            //  5. Do NOT invent newsletter defaults for YouTube visitors
-            //  6. Image-pixel + iframe beacon (sendBeacon fails on GAS 302)
-            // ============================================================
+var YT_TRACKER_BASE = 'https://campaign.bioenabletech.com/';
+// Public-facing campaign landing page (clean BioEnable domain)
+var YT_LANDING_PAGE = 'https://campaign.bioenabletech.com/solutions.html';
 
-            // ⚠️ After Apps Script redeploy, paste the NEW /exec URL here
-            var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw62GW8CXcu4-tl9HcbB39OYAqNNl2Gjut0QFPoPwutxQSHwsr4VQzcz5eeQkYnKvtivA/exec";
+var YT_CAMPAIGN_SHEET = 'YouTube_Campaigns';
+var YT_CLICK_SHEET    = 'YouTube_Clicks';
 
-            // ✅ Allowlist — GitHub Pages campaign landing must be included,
-            // otherwise the redirect is blocked and falls back to the homepage.
-            var ALLOWED_HOST_EXACT = [
-                "bioenabletech.com",
-                "www.bioenabletech.com",
-                "shubham31052000.github.io"
-            ];
-            var ALLOWED_HOST_SUFFIX = ".bioenabletech.com"; // ovse.bioenabletech.com etc.
-            var FALLBACK_URL = "https://www.bioenabletech.com/";
+// YouTube_Campaigns columns:
+// A VideoID | B VideoTitle | C utm_campaign | D utm_content | E LandingPage
+// F utm_source | G utm_medium | H Active | I Generated_Link | J Clicks | K Notes | L Updated
+var YT_CAMPAIGN_HEADERS = [
+  'VideoID', 'VideoTitle', 'utm_campaign', 'utm_content', 'LandingPage',
+  'utm_source', 'utm_medium', 'Active', 'Generated_Link', 'Clicks', 'Notes', 'Updated'
+];
 
-            var params = new URLSearchParams(window.location.search);
-            var cid = params.get("cid") || "";
-            var cmp = params.get("cmp") || "";
-            var email = params.get("email") || "";
+// YouTube_Clicks columns (one row every time someone clicks a video link):
+// A ClickTime | B VideoID | C utm_campaign | D utm_content | E utm_source | F utm_medium | G Landing
+var YT_CLICK_HEADERS = [
+  'ClickTime', 'VideoID', 'utm_campaign', 'utm_content', 'utm_source', 'utm_medium', 'Landing'
+];
 
-            // ✅ Keep blank when missing — NEVER invent newsletter defaults
-            var utm_source = (params.get("utm_source") || "").trim();
-            var utm_medium = (params.get("utm_medium") || "").trim();
-            var utm_campaign = (params.get("utm_campaign") || "").trim();
-            var utm_content = (params.get("utm_content") || "").trim();
-            var rawRedirect = params.get("redirect");
 
-            // ✅ Never treat click UUID (CMP_xxxx) as a marketing campaign code
-            if (!utm_campaign || utm_campaign === cmp || /^CMP_[0-9a-f-]{8,}$/i.test(utm_campaign)) {
-                utm_campaign = "";
-            }
+// ============================================================
+// MENU — call ytAddMenu_() from your existing onOpen()
+// ============================================================
+function ytAddMenu_() {
+  SpreadsheetApp.getUi()
+    .createMenu('YouTube Links')
+    .addItem('1. Setup / Repair Sheets', 'setupYouTubeSheets')
+    .addItem('2. Generate All Video Links', 'generateYouTubeLinks')
+    .addItem('3. Refresh Click Counts', 'refreshYouTubeClickCounts')
+    .addToUi();
+}
 
-            // Newsletter clicks usually have email+cmp but may omit UTMs in older emails.
-            // Only then backfill newsletter defaults.
-            if (email && cmp && !utm_source && !utm_medium) {
-                utm_source = "newsletter";
-                utm_medium = "email";
-            }
 
-            // ---- Resolve + validate redirect target ----
-            var targetUrl = FALLBACK_URL;
-            if (rawRedirect && rawRedirect.trim() !== "") {
-                try {
-                    var decoded = rawRedirect;
-                    // Decode up to twice (some links are double-encoded)
-                    for (var d = 0; d < 2; d++) {
-                        try {
-                            var next = decodeURIComponent(decoded);
-                            if (next === decoded) break;
-                            decoded = next;
-                        } catch (e) { break; }
-                    }
-                    if (isAllowedRedirect(decoded)) {
-                        targetUrl = decoded;
-                    } else {
-                        console.warn("[Tracker] BLOCKED redirect host (not in allowlist):", decoded);
-                        targetUrl = FALLBACK_URL;
-                    }
-                } catch (e) {
-                    targetUrl = FALLBACK_URL;
-                }
-            }
+// ============================================================
+// SETUP — creates sheets + starter rows for your products
+// ============================================================
+function setupYouTubeSheets() {
+  var ss = SpreadsheetApp.openById(SHEET_ID);
 
-            // ---- Append UTMs to landing page (critical for YouTube/Ads form) ----
-            targetUrl = appendUtms(targetUrl, {
-                utm_source: utm_source,
-                utm_medium: utm_medium,
-                utm_campaign: utm_campaign,
-                utm_content: utm_content
-            });
+  // --- YouTube_Campaigns ---
+  var cs = ss.getSheetByName(YT_CAMPAIGN_SHEET);
+  if (!cs) {
+    cs = ss.insertSheet(YT_CAMPAIGN_SHEET);
+    cs.getRange(1, 1, 1, YT_CAMPAIGN_HEADERS.length).setValues([YT_CAMPAIGN_HEADERS]);
+    if (typeof styleHeaderRow === 'function') styleHeaderRow(cs, 1, YT_CAMPAIGN_HEADERS.length);
 
-            // ---- Fire Apps Script log ----
-            // Newsletter: has email + cmp → log click + Zoho
-            // YouTube/Ads: has utm_campaign (no email) → log click only in Sheets
-            var hasCampaignUtm = !!(utm_campaign || utm_source || utm_content);
-            if (email || cmp || hasCampaignUtm) {
-                var qs = [
-                    "cmp=" + encodeURIComponent(cmp || ('YTCLK_' + Date.now())),
-                    "cid=" + encodeURIComponent(cid || 'YOUTUBE_CLICK'),
-                    "email=" + encodeURIComponent(email),
-                    "utm_source=" + encodeURIComponent(utm_source),
-                    "utm_medium=" + encodeURIComponent(utm_medium),
-                    "utm_campaign=" + encodeURIComponent(utm_campaign),
-                    "utm_content=" + encodeURIComponent(utm_content),
-                    "redirect=" + encodeURIComponent(targetUrl),
-                    "_t=" + Date.now()
-                ].join("&");
+    // Starter rows — edit VideoTitle / Notes; keep codes as-is unless you rename campaigns
+    var starters = [
+      // VideoID, Title, utm_campaign, utm_content, Landing, source, medium, Active, link, clicks, notes, updated
+      ['YT_OVSE_01', 'OVSE — Aadhaar Offline Verification', 'CMP-YT-OVSE', 'OVSE_DEMO_VIDEO',
+        YT_LANDING_PAGE, 'youtube', 'video', 'YES', '', 0, 'Paste Generated_Link in this video description', ''],
+      ['YT_CAMBLOCKER_01', 'CamBlocker — Camera Access Control', 'CMP-YT-CAMBLOCKER', 'CAMBLOCKER_DEMO_VIDEO',
+        YT_LANDING_PAGE, 'youtube', 'video', 'YES', '', 0, 'Paste Generated_Link in this video description', ''],
+      ['YT_AGENT_01', 'BioEnable Smart Agent for Workspace', 'CMP-YT-AGENT', 'AGENT_DEMO_VIDEO',
+        YT_LANDING_PAGE, 'youtube', 'video', 'YES', '', 0, 'Paste Generated_Link in this video description', ''],
+      ['YT_ATTENDANCE_01', 'AI CCTV Face-based Employee Tracking', 'CMP-YT-ATTENDANCE', 'CCTV_ATTENDANCE_DEMO_VIDEO',
+        YT_LANDING_PAGE, 'youtube', 'video', 'YES', '', 0, 'Paste Generated_Link in this video description', ''],
+      ['YT_AI_01', 'Artificial Intelligence Solutions Overview', 'CMP-YT-AI', 'AI_SOLUTIONS_OVERVIEW',
+        YT_LANDING_PAGE, 'youtube', 'video', 'YES', '', 0, 'General AI solutions video', ''],
+      ['YT_SOFTWARE_01', 'Software Solutions Overview', 'CMP-YT-SOFTWARE', 'SOFTWARE_SOLUTIONS_OVERVIEW',
+        YT_LANDING_PAGE, 'youtube', 'video', 'YES', '', 0, 'General software solutions video', '']
+    ];
+    cs.getRange(2, 1, starters.length, YT_CAMPAIGN_HEADERS.length).setValues(starters);
+    cs.setColumnWidth(2, 280);
+    cs.setColumnWidth(3, 180);
+    cs.setColumnWidth(4, 220);
+    cs.setColumnWidth(9, 560);
+  }
 
-                var beaconUrl = APPS_SCRIPT_URL + (APPS_SCRIPT_URL.indexOf("?") >= 0 ? "&" : "?") + qs;
-                fireAppsScriptBeacon(beaconUrl);
-            }
+  // --- YouTube_Clicks ---
+  var ls = ss.getSheetByName(YT_CLICK_SHEET);
+  if (!ls) {
+    ls = ss.insertSheet(YT_CLICK_SHEET);
+    ls.getRange(1, 1, 1, YT_CLICK_HEADERS.length).setValues([YT_CLICK_HEADERS]);
+    if (typeof styleHeaderRow === 'function') styleHeaderRow(ls, 1, YT_CLICK_HEADERS.length);
+    ls.setColumnWidth(1, 160);
+    ls.setColumnWidth(3, 180);
+    ls.setColumnWidth(4, 220);
+  }
 
-            // ---- Instant redirect ----
-            setTimeout(function () {
-                window.location.replace(targetUrl);
-            }, 80);
+  // Also ensure Campaign_Log can store YouTube form leads (already exists in your sheet)
+  Logger.log('[YouTube] Sheets ready: YouTube_Campaigns + YouTube_Clicks');
+  return 'YouTube sheets ready. Run Generate All Video Links next.';
+}
 
-            // -------------------- helpers --------------------
 
-            function isAllowedRedirect(url) {
-                try {
-                    var u = new URL(url, window.location.href);
-                    if (u.protocol !== "https:" && u.protocol !== "http:") return false;
-                    var host = u.hostname.toLowerCase();
-                    if (ALLOWED_HOST_EXACT.indexOf(host) !== -1) return true;
-                    if (host.length > ALLOWED_HOST_SUFFIX.length &&
-                        host.slice(-ALLOWED_HOST_SUFFIX.length) === ALLOWED_HOST_SUFFIX) {
-                        return true;
-                    }
-                    return false;
-                } catch (e) {
-                    return false;
-                }
-            }
+// ============================================================
+// GENERATE LINKS — fills column I (Generated_Link)
+// ============================================================
+function generateYouTubeLinks() {
+  setupYouTubeSheets();
 
-            function appendUtms(url, utms) {
-                try {
-                    var u = new URL(url, window.location.href);
-                    Object.keys(utms).forEach(function (k) {
-                        var v = utms[k];
-                        if (v && !u.searchParams.get(k)) {
-                            u.searchParams.set(k, v);
-                        }
-                    });
-                    return u.toString();
-                } catch (e) {
-                    // Fallback string append if URL() fails
-                    var extra = [];
-                    Object.keys(utms).forEach(function (k) {
-                        if (utms[k] && url.indexOf(k + "=") === -1) {
-                            extra.push(encodeURIComponent(k) + "=" + encodeURIComponent(utms[k]));
-                        }
-                    });
-                    if (!extra.length) return url;
-                    return url + (url.indexOf("?") >= 0 ? "&" : "?") + extra.join("&");
-                }
-            }
+  var ss    = SpreadsheetApp.openById(SHEET_ID);
+  var sheet = ss.getSheetByName(YT_CAMPAIGN_SHEET);
+  var data  = sheet.getDataRange().getValues();
+  var built = 0;
 
-            // sendBeacon/fetch(no-cors) often fail on Apps Script 302 redirects.
-            // Image pixel + iframe GET follow redirects reliably.
-            function fireAppsScriptBeacon(url) {
-                try {
-                    var img = new Image();
-                    img.referrerPolicy = "no-referrer-when-downgrade";
-                    img.src = url;
-                } catch (e1) {}
+  for (var i = 1; i < data.length; i++) {
+    var videoId = data[i][0] ? data[i][0].toString().trim() : '';
+    if (!videoId) continue;
 
-                try {
-                    var iframe = document.createElement("iframe");
-                    iframe.style.cssText = "display:none;width:0;height:0;border:0;";
-                    iframe.src = url;
-                    document.body.appendChild(iframe);
-                } catch (e2) {}
-            }
-        })();
-    </script>
-</body>
-</html>
+    var active = data[i][7] ? data[i][7].toString().trim().toUpperCase() : 'YES';
+    if (active === 'NO' || active === 'PAUSED') continue;
+
+    var campaign = data[i][2] ? data[i][2].toString().trim() : '';
+    var content  = data[i][3] ? data[i][3].toString().trim() : videoId;
+    var landing  = data[i][4] ? data[i][4].toString().trim() : YT_LANDING_PAGE;
+    var source   = data[i][5] ? data[i][5].toString().trim() : 'youtube';
+    var medium   = data[i][6] ? data[i][6].toString().trim() : 'video';
+
+    if (!campaign) {
+      campaign = 'CMP-YT-' + videoId.replace(/^YT_/i, '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    }
+    if (campaign.toUpperCase().indexOf('CMP-') !== 0) {
+      campaign = 'CMP-' + campaign;
+    }
+
+    var link = YT_TRACKER_BASE +
+      '?utm_source='   + encodeURIComponent(source) +
+      '&utm_medium='   + encodeURIComponent(medium) +
+      '&utm_campaign=' + encodeURIComponent(campaign) +
+      '&utm_content='  + encodeURIComponent(content) +
+      '&redirect='     + encodeURIComponent(landing);
+
+    sheet.getRange(i + 1, 3).setValue(campaign);          // normalize utm_campaign
+    sheet.getRange(i + 1, 9).setValue(link);              // Generated_Link
+    sheet.getRange(i + 1, 12).setValue(new Date());       // Updated
+    built++;
+  }
+
+  Logger.log('[YouTube] Generated ' + built + ' links.');
+  return 'Generated ' + built + ' links. Copy column I into each YouTube description.';
+}
+
+
+// ============================================================
+// LOG ONE ANONYMOUS CLICK (called from markClicked when no email)
+// ============================================================
+function logYouTubeClick_(utmCampaign, utmContent, utmSource, utmMedium, landing, videoIdHint) {
+  try {
+    var ss = SpreadsheetApp.openById(SHEET_ID);
+    var ls = ss.getSheetByName(YT_CLICK_SHEET);
+    if (!ls) {
+      setupYouTubeSheets();
+      ls = ss.getSheetByName(YT_CLICK_SHEET);
+    }
+
+    var videoId = videoIdHint || lookupVideoId_(utmCampaign, utmContent) || '';
+
+    ls.appendRow([
+      new Date(),
+      videoId,
+      utmCampaign || '',
+      utmContent  || '',
+      utmSource   || 'youtube',
+      utmMedium   || 'video',
+      landing     || YT_LANDING_PAGE
+    ]);
+
+    // Also append a lightweight row to Campaign_Log so dashboard stays unified
+    try {
+      var cl = ss.getSheetByName('Campaign_Log');
+      if (cl) {
+        var clickId = 'YTCLK_' + Utilities.getUuid().substring(0, 8);
+        cl.appendRow([
+          clickId,                    // A CampaignID (click id)
+          'YOUTUBE_CLICK',            // B ContactID
+          '',                         // C Email (unknown yet)
+          utmContent || '',           // D Industry / content tag
+          '',                         // E Version
+          'YouTube click: ' + (utmCampaign || ''), // F Subject
+          new Date(),                 // G SentDate / ClickTime
+          'YES',                      // H Clicked
+          landing || YT_LANDING_PAGE, // I CTA_Link
+          'YouTube',                  // J Campaign name
+          '',                         // K Dashboard key
+          utmCampaign || ''           // L Campaign_Code
+        ]);
+      }
+    } catch (e2) {
+      Logger.log('[YouTube→Campaign_Log] ' + e2.message);
+    }
+  } catch (err) {
+    Logger.log('[YouTube Click Log Error] ' + err.message);
+  }
+}
+
+function lookupVideoId_(utmCampaign, utmContent) {
+  try {
+    var sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(YT_CAMPAIGN_SHEET);
+    if (!sheet) return '';
+    var data = sheet.getDataRange().getValues();
+    for (var i = 1; i < data.length; i++) {
+      var camp = data[i][2] ? data[i][2].toString().trim() : '';
+      var cont = data[i][3] ? data[i][3].toString().trim() : '';
+      if (utmCampaign && camp === utmCampaign) return data[i][0].toString();
+      if (utmContent && cont === utmContent) return data[i][0].toString();
+    }
+  } catch (e) {}
+  return '';
+}
+
+
+// ============================================================
+// REFRESH CLICK COUNTS into YouTube_Campaigns column J
+// ============================================================
+function refreshYouTubeClickCounts() {
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var ls = ss.getSheetByName(YT_CLICK_SHEET);
+  var cs = ss.getSheetByName(YT_CAMPAIGN_SHEET);
+  if (!ls || !cs) return 'Sheets missing — run Setup first.';
+
+  var clicks = ls.getDataRange().getValues();
+  var byCampaign = {};
+  var byContent  = {};
+
+  for (var i = 1; i < clicks.length; i++) {
+    var camp = clicks[i][2] ? clicks[i][2].toString().trim() : '';
+    var cont = clicks[i][3] ? clicks[i][3].toString().trim() : '';
+    if (camp) byCampaign[camp] = (byCampaign[camp] || 0) + 1;
+    if (cont) byContent[cont]  = (byContent[cont]  || 0) + 1;
+  }
+
+  var camp = cs.getDataRange().getValues();
+  var out  = [];
+  for (var r = 1; r < camp.length; r++) {
+    var cCode = camp[r][2] ? camp[r][2].toString().trim() : '';
+    var cCont = camp[r][3] ? camp[r][3].toString().trim() : '';
+    var n = byCampaign[cCode] || byContent[cCont] || 0;
+    out.push([n]);
+  }
+  if (out.length > 0) cs.getRange(2, 10, out.length, 1).setValues(out);
+
+  Logger.log('[YouTube] Click counts refreshed.');
+  return 'Click counts refreshed for ' + out.length + ' videos.';
+}
