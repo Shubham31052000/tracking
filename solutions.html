@@ -40,9 +40,12 @@
     height:64px;gap:16px;
   }
   .logo{
-    display:flex;align-items:center;gap:9px;
+    display:flex;align-items:center;gap:10px;
     font-size:19px;font-weight:800;color:var(--navy);
     letter-spacing:.3px;text-decoration:none;
+  }
+  .logo img{
+    height:36px;width:auto;display:block;
   }
   .logo .mark{
     width:30px;height:30px;border-radius:8px;
@@ -235,7 +238,10 @@
 <div class="topbar">
   <div class="wrap">
     <a class="logo" href="https://www.bioenabletech.com" target="_blank" rel="noopener">
-      <span class="mark">B</span> BioEnable
+      <img src="images/logo.png" alt="BioEnable"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='grid';">
+      <span class="mark" style="display:none;">B</span>
+      <span>BioEnable</span>
     </a>
     <nav class="topnav">
       <a href="#ovse">OVSE</a>
@@ -483,7 +489,7 @@
   // ZOHO-ONLY LEAD PUSH (no PHP on this campaign landing page)
   // ⚠️ Paste your CURRENT Apps Script Web App /exec URL below.
   // ============================================================
-  var APPS_SCRIPT_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbw62GW8CXcu4-tl9HcbB39OYAqNNl2Gjut0QFPoPwutxQSHwsr4VQzcz5eeQkYnKvtivA/exec";
+  var APPS_SCRIPT_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyu90LhaAADoN1cAD5jgmajnBCzrRL_SZLuU7ZBYom4CiqMqB-NGozgZFKYXIpb9aM9A/exec";
   var WHATSAPP_NUMBER = "919075010016";
 
   var UTM_KEYS = ['utm_source','utm_medium','utm_campaign','utm_content'];
