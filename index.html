@@ -128,7 +128,7 @@
                             decoded = next;
                         } catch (e) { break; }
                     }
-                    decoded = rewriteLegacyHost(upgradeToHttps(decoded));
+                    decoded = rewriteLegacyHost(toAbsoluteHttps(decoded));
                     if (isAllowedRedirect(decoded)) {
                         targetUrl = decoded;
                     } else {
@@ -171,16 +171,23 @@
                 window.location.replace(targetUrl);
             }, 80);
 
-            // http:// destinations trigger browser and Google warnings
-            function upgradeToHttps(url) {
-                return url.replace(/^http:\/\//i, "https://");
+            // A redirect value saved without a scheme ("campaign.bioenabletech.com/x.html")
+            // would otherwise resolve as a path on this domain and produce
+            // campaign.bioenabletech.com/campaign.bioenabletech.com/x.html
+            function toAbsoluteHttps(url) {
+                var s = (url || "").trim();
+                if (!s) return s;
+                if (/^\/\//.test(s)) return "https:" + s;
+                if (/^https?:\/\//i.test(s)) return s.replace(/^http:\/\//i, "https://");
+                if (/^[a-z0-9.-]+\.[a-z]{2,}(\/|$|\?|#)/i.test(s)) return "https://" + s;
+                return s;
             }
 
             // Links already pasted in YouTube descriptions still point at the raw
             // GitHub Pages URL. Map them onto the branded domain instead of blocking.
             function rewriteLegacyHost(url) {
                 try {
-                    var u = new URL(url, window.location.href);
+                    var u = new URL(url);
                     if (u.hostname.toLowerCase() !== "shubham31052000.github.io") return url;
                     var page = u.pathname.split("/").pop() || "solutions.html";
                     return "https://campaign.bioenabletech.com/" + page + u.search + u.hash;
@@ -191,7 +198,9 @@
 
             function isAllowedRedirect(url) {
                 try {
-                    var u = new URL(url, window.location.href);
+                    // No base URL — a relative value must fail here, never be
+                    // resolved against our own origin.
+                    var u = new URL(url);
                     if (u.protocol !== "https:") return false;
                     var host = u.hostname.toLowerCase();
                     if (ALLOWED_HOST_EXACT.indexOf(host) !== -1) return true;
@@ -207,7 +216,7 @@
 
             function appendUtms(url, utms) {
                 try {
-                    var u = new URL(url, window.location.href);
+                    var u = new URL(url);
                     Object.keys(utms).forEach(function (k) {
                         var v = utms[k];
                         if (v && !u.searchParams.get(k)) {
