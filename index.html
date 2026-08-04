@@ -236,19 +236,14 @@
                 }
             }
 
+            // ONE beacon only — image + iframe was logging every YouTube click twice
+            // in YouTube_Clicks (each hits doGet independently).
             function fireAppsScriptBeacon(url) {
                 try {
                     var img = new Image();
                     img.referrerPolicy = "no-referrer-when-downgrade";
                     img.src = url;
                 } catch (e1) {}
-
-                try {
-                    var iframe = document.createElement("iframe");
-                    iframe.style.cssText = "display:none;width:0;height:0;border:0;";
-                    iframe.src = url;
-                    document.body.appendChild(iframe);
-                } catch (e2) {}
             }
         })();
     </script>
