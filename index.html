@@ -273,8 +273,8 @@
                 }
             }
 
-            // Fire beacon then redirect. keepalive fetch survives navigation so we
-            // don't wait the full Apps Script write (~5–8s) on the spinner page.
+            // ONE beacon only (Image). fetch+Image both called doGet → duplicate Events rows.
+            // Redirect after load/error or 500ms — image request usually already in flight.
             function fireAppsScriptBeacon(url, onDone) {
                 var done = false;
                 function finish() {
@@ -282,13 +282,6 @@
                     done = true;
                     if (typeof onDone === "function") onDone();
                 }
-
-                try {
-                    if (typeof fetch === "function") {
-                        fetch(url, { mode: "no-cors", keepalive: true, credentials: "omit", cache: "no-store" })
-                            .catch(function () {});
-                    }
-                } catch (e0) {}
 
                 try {
                     var img = new Image();
@@ -301,8 +294,7 @@
                     return;
                 }
 
-                // Redirect soon; keepalive + img keep the log request alive
-                setTimeout(finish, 450);
+                setTimeout(finish, 500);
             }
         })();
     </script>
