@@ -149,7 +149,9 @@
                 utm_content: utm_content
             });
 
-            // Fire Apps Script log for newsletter OR YouTube UTM clicks
+            // Fire Apps Script log for newsletter OR campaign UTM clicks.
+            // WAIT for beacon before redirect — 80ms was cancelling the request
+            // so Marketing_Events never received click rows.
             var hasCampaignUtm = !!(utm_campaign || utm_source || utm_content);
             if (email || cmp || hasCampaignUtm) {
                 var qs = [
@@ -165,12 +167,12 @@
                 ].join("&");
 
                 var beaconUrl = APPS_SCRIPT_URL + (APPS_SCRIPT_URL.indexOf("?") >= 0 ? "&" : "?") + qs;
-                fireAppsScriptBeacon(beaconUrl);
-            }
-
-            setTimeout(function () {
+                fireAppsScriptBeacon(beaconUrl, function () {
+                    window.location.replace(targetUrl);
+                });
+            } else {
                 window.location.replace(targetUrl);
-            }, 80);
+            }
 
             // A redirect value saved without a scheme ("campaign.bioenabletech.com/x.html")
             // would otherwise resolve as a path on this domain and produce
@@ -237,14 +239,28 @@
                 }
             }
 
-            // ONE beacon only — image + iframe was logging every YouTube click twice
-            // in YouTube_Clicks (each hits doGet independently).
-            function fireAppsScriptBeacon(url) {
+            // ONE beacon — wait for load/error (or max 1.5s) then redirect
+            function fireAppsScriptBeacon(url, onDone) {
+                var done = false;
+                function finish() {
+                    if (done) return;
+                    done = true;
+                    if (typeof onDone === "function") onDone();
+                }
+
                 try {
                     var img = new Image();
+                    img.onload = finish;
+                    img.onerror = finish;
                     img.referrerPolicy = "no-referrer-when-downgrade";
                     img.src = url;
-                } catch (e1) {}
+                } catch (e1) {
+                    finish();
+                    return;
+                }
+
+                // Apps Script is slow — give it time before navigating away
+                setTimeout(finish, 1500);
             }
         })();
     </script>
