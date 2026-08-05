@@ -5,6 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BioEnable Software Solutions — Enquire or Book a Demo</title>
 <meta name="description" content="Aadhaar Offline Verification (OVSE), CamBlocker Camera Access Control, AI Agent Assistant and AI based CCTV Attendance from BioEnable Technologies.">
+<!-- BEFORE paint: ads with #camblocker must not scroll past the form -->
+<script>
+(function () {
+  try {
+    var h = (location.hash || '').toLowerCase();
+    if (h === '#camblocker' || h === '#ovse' || h === '#aiagent' ||
+        h === '#attendance' || h === '#solutions') {
+      history.replaceState(null, '', location.pathname + location.search + '#enquire');
+    }
+  } catch (e) {}
+})();
+</script>
 <style>
   :root{
     --navy:#0a1f44;
@@ -94,7 +106,7 @@
   @media(max-width:640px){.hero h1{font-size:27px;}}
 
   /* ---------- Inquiry form (top of page) ---------- */
-  .form-section{background:var(--bg-alt);padding:44px 0;border-bottom:1px solid var(--line);}
+  .form-section{background:var(--bg-alt);padding:44px 0;border-bottom:1px solid var(--line);scroll-margin-top:72px;}
   .form-card{
     background:#fff;border:1px solid var(--line);border-radius:var(--radius);
     box-shadow:0 14px 40px rgba(10,31,68,.10);
@@ -530,6 +542,22 @@ src="https://www.facebook.com/tr?id=1150567758150959&ev=PageView&noscript=1"
         try { el.value = sessionStorage.getItem('be_' + k) || ''; } catch(e){ el.value = ''; }
       }
     });
+
+    // Ads/YT should stop on the form — remap old #camblocker / #ovse hashes → #enquire
+    var productHashes = { '#camblocker':1, '#ovse':1, '#aiagent':1, '#attendance':1, '#solutions':1 };
+    var hash = (window.location.hash || '').toLowerCase();
+    if (productHashes[hash] || !hash) {
+      history.replaceState(null, '', window.location.pathname + window.location.search + '#enquire');
+      hash = '#enquire';
+    }
+    if (hash === '#enquire') {
+      var formEl = document.getElementById('enquire');
+      if (formEl) {
+        // Instant jump to form (smooth scroll felt like "scrolling to camblocker")
+        formEl.scrollIntoView({ behavior: 'auto', block: 'start' });
+      }
+    }
+
     console.log('[BioEnable Landing] UTMs:', {
       source:   document.getElementById('utm_source').value,
       medium:   document.getElementById('utm_medium').value,

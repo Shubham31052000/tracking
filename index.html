@@ -63,16 +63,18 @@
             // from sheet, paste this block, upload as GitHub index.html.
             //   https://campaign.bioenabletech.com/?c=fb-camblocker
             // ------------------------------------------------------------
+            // All ads/YT short links land on the form (#enquire), NOT product mid-page sections.
+            var FORM_LANDING = DEFAULT_LANDING + "#enquire";
             var SHORT_LINKS = {
-                "ovse":       { landing: DEFAULT_LANDING + "#ovse",       campaign: "CMP-YT-OVSE",       content: "OVSE_DEMO_VIDEO",           source: "youtube",  medium: "video" },
-                "camblocker": { landing: DEFAULT_LANDING + "#camblocker", campaign: "CMP-YT-CAMBLOCKER", content: "CAMBLOCKER_DEMO_VIDEO",     source: "youtube",  medium: "video" },
-                "agent":      { landing: DEFAULT_LANDING + "#aiagent",    campaign: "CMP-YT-AGENT",      content: "AGENT_DEMO_VIDEO",          source: "youtube",  medium: "video" },
-                "attendance": { landing: DEFAULT_LANDING + "#attendance", campaign: "CMP-YT-ATTENDANCE", content: "CCTV_ATTENDANCE_DEMO_VIDEO",source: "youtube",  medium: "video" },
-                "ai":         { landing: DEFAULT_LANDING,                 campaign: "CMP-YT-AI",         content: "AI_SOLUTIONS_OVERVIEW",     source: "youtube",  medium: "video" },
-                "software":   { landing: DEFAULT_LANDING,                 campaign: "CMP-YT-SOFTWARE",   content: "SOFTWARE_SOLUTIONS_OVERVIEW", source: "youtube", medium: "video" },
-                "fb-camblocker": { landing: DEFAULT_LANDING + "#camblocker", campaign: "CMP-FB-CAMBLOCKER", content: "FB_FEED_V1", source: "facebook", medium: "paid_social" },
-                // Alias — sheet Short_Code/Short_Link sometimes used this (no hyphens)
-                "cmpfbcamblocker": { landing: DEFAULT_LANDING + "#camblocker", campaign: "CMP-FB-CAMBLOCKER", content: "FB_FEED_V1", source: "facebook", medium: "paid_social" }
+                "ovse":       { landing: FORM_LANDING, campaign: "CMP-YT-OVSE",       content: "OVSE_DEMO_VIDEO",            source: "youtube",  medium: "video" },
+                "camblocker": { landing: FORM_LANDING, campaign: "CMP-YT-CAMBLOCKER", content: "CAMBLOCKER_DEMO_VIDEO",      source: "youtube",  medium: "video" },
+                "agent":      { landing: FORM_LANDING, campaign: "CMP-YT-AGENT",      content: "AGENT_DEMO_VIDEO",           source: "youtube",  medium: "video" },
+                "attendance": { landing: FORM_LANDING, campaign: "CMP-YT-ATTENDANCE", content: "CCTV_ATTENDANCE_DEMO_VIDEO", source: "youtube",  medium: "video" },
+                "ai":         { landing: FORM_LANDING, campaign: "CMP-YT-AI",         content: "AI_SOLUTIONS_OVERVIEW",      source: "youtube",  medium: "video" },
+                "software":   { landing: FORM_LANDING, campaign: "CMP-YT-SOFTWARE",   content: "SOFTWARE_SOLUTIONS_OVERVIEW", source: "youtube", medium: "video" },
+                "fb-camblocker": { landing: FORM_LANDING, campaign: "CMP-FB-CAMBLOCKER", content: "FB_FEED_V1", source: "facebook", medium: "paid_social" },
+                // Alias — sheet Short_Code sometimes used this (no hyphens)
+                "cmpfbcamblocker": { landing: FORM_LANDING, campaign: "CMP-FB-CAMBLOCKER", content: "FB_FEED_V1", source: "facebook", medium: "paid_social" }
             };
 
             // github.io is deliberately NOT allowed — legacy links are rewritten to the
@@ -158,6 +160,9 @@
                 utm_campaign: utm_campaign,
                 utm_content: utm_content
             });
+
+            // Always stop on the form — never #camblocker / product sections
+            targetUrl = forceEnquireHash(targetUrl);
 
             // Fire Apps Script for: newsletter, long UTM URL, OR any ?c= short link.
             // WAIT for beacon before redirect — otherwise Marketing_Events misses clicks.
@@ -251,7 +256,25 @@
                 }
             }
 
-            // ONE beacon — wait for load/error (or max 1.5s) then redirect
+            /** Campaign ads land on the form (#enquire), not product mid-page sections. */
+            function forceEnquireHash(url) {
+                try {
+                    var u = new URL(url);
+                    if (u.pathname.indexOf("solutions") === -1 &&
+                        u.hostname.indexOf("campaign.bioenabletech.com") === -1) {
+                        return url;
+                    }
+                    var h = (u.hash || "").toLowerCase();
+                    var product = { "#camblocker":1, "#ovse":1, "#aiagent":1, "#attendance":1, "#solutions":1, "":1 };
+                    if (product[h] || !h) u.hash = "enquire";
+                    return u.toString();
+                } catch (e) {
+                    return (url || "").replace(/#(camblocker|ovse|aiagent|attendance|solutions)\b/i, "#enquire");
+                }
+            }
+
+            // Fire beacon then redirect. keepalive fetch survives navigation so we
+            // don't wait the full Apps Script write (~5–8s) on the spinner page.
             function fireAppsScriptBeacon(url, onDone) {
                 var done = false;
                 function finish() {
@@ -259,6 +282,13 @@
                     done = true;
                     if (typeof onDone === "function") onDone();
                 }
+
+                try {
+                    if (typeof fetch === "function") {
+                        fetch(url, { mode: "no-cors", keepalive: true, credentials: "omit", cache: "no-store" })
+                            .catch(function () {});
+                    }
+                } catch (e0) {}
 
                 try {
                     var img = new Image();
@@ -271,8 +301,8 @@
                     return;
                 }
 
-                // Apps Script is slow — give it time before navigating away
-                setTimeout(finish, 1500);
+                // Redirect soon; keepalive + img keep the log request alive
+                setTimeout(finish, 450);
             }
         })();
     </script>
