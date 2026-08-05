@@ -615,8 +615,7 @@ src="https://www.facebook.com/tr?id=1150567758150959&ev=PageView&noscript=1"
     var utms = {};
     UTM_KEYS.forEach(function(k){ utms[k] = document.getElementById(k).value.trim(); });
 
-    // Campaign landing page → always push to Zoho.
-    // Fall back to youtube/video so a lead is never lost if UTMs were stripped.
+    // Push real UTMs only — do not invent youtube/video/campaign defaults
     pushToZoho({
       email:        email,
       name:         name,
@@ -624,11 +623,11 @@ src="https://www.facebook.com/tr?id=1150567758150959&ev=PageView&noscript=1"
       company:      company,
       message:      message,
       mode:         currentMode,
-      cid:          'YT_LANDING',
-      utm_source:   utms.utm_source   || 'youtube',
-      utm_medium:   utms.utm_medium   || 'video',
-      utm_campaign: utms.utm_campaign || 'CMP-YT-GENERAL',
-      utm_content:  utms.utm_content  || 'YT_LANDING_FORM'
+      cid:          'SOLUTIONS_FORM',
+      utm_source:   utms.utm_source   || '',
+      utm_medium:   utms.utm_medium   || '',
+      utm_campaign: utms.utm_campaign || '',
+      utm_content:  utms.utm_content  || ''
     });
 
     // Tell Meta a lead was submitted (needed for "Leads" / conversion ads)
