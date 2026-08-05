@@ -50,20 +50,18 @@
             // Domain: https://campaign.bioenabletech.com/
             // ============================================================
 
-            // ⚠️ Keep in sync with solutions.html Apps Script /exec URL
-            // ⚠️ MUST be the SAME /exec as solutions.html — otherwise clicks & forms hit different apps
+            // ⚠️ MUST match solutions.html AND live Deploy → Version that shows in Executions
+            // Live (Working Version 32 as of 05-Aug-2026):
             var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw62GW8CXcu4-tl9HcbB39OYAqNNl2Gjut0QFPoPwutxQSHwsr4VQzcz5eeQkYnKvtivA/exec";
 
             // Default landing when someone opens the domain with NO redirect param
             var DEFAULT_LANDING = "https://campaign.bioenabletech.com/solutions.html";
 
             // ------------------------------------------------------------
-            // SHORT LINKS — use these in YouTube descriptions instead of a
-            // long ?redirect=... URL. Google shows its "Redirect Notice"
-            // interstitial for URLs that look like open redirectors, so the
-            // public-facing link should carry only a short code.
-            //   https://campaign.bioenabletech.com/?c=camblocker
-            // Regenerate this block from the sheet: YouTube Links > Print short-link map
+            // SHORT LINKS — keys MUST match Marketing_Links column Short_Code
+            // (and Short_Link ?c=…). Hardcoded here — Print short-link map
+            // from sheet, paste this block, upload as GitHub index.html.
+            //   https://campaign.bioenabletech.com/?c=fb-camblocker
             // ------------------------------------------------------------
             var SHORT_LINKS = {
                 "ovse":       { landing: DEFAULT_LANDING + "#ovse",       campaign: "CMP-YT-OVSE",       content: "OVSE_DEMO_VIDEO",           source: "youtube",  medium: "video" },
@@ -72,7 +70,9 @@
                 "attendance": { landing: DEFAULT_LANDING + "#attendance", campaign: "CMP-YT-ATTENDANCE", content: "CCTV_ATTENDANCE_DEMO_VIDEO",source: "youtube",  medium: "video" },
                 "ai":         { landing: DEFAULT_LANDING,                 campaign: "CMP-YT-AI",         content: "AI_SOLUTIONS_OVERVIEW",     source: "youtube",  medium: "video" },
                 "software":   { landing: DEFAULT_LANDING,                 campaign: "CMP-YT-SOFTWARE",   content: "SOFTWARE_SOLUTIONS_OVERVIEW", source: "youtube", medium: "video" },
-                "fb-camblocker": { landing: DEFAULT_LANDING + "#camblocker", campaign: "CMP-FB-CAMBLOCKER", content: "FB_FEED_V1", source: "facebook", medium: "paid_social" }
+                "fb-camblocker": { landing: DEFAULT_LANDING + "#camblocker", campaign: "CMP-FB-CAMBLOCKER", content: "FB_FEED_V1", source: "facebook", medium: "paid_social" },
+                // Alias — sheet Short_Code/Short_Link sometimes used this (no hyphens)
+                "cmpfbcamblocker": { landing: DEFAULT_LANDING + "#camblocker", campaign: "CMP-FB-CAMBLOCKER", content: "FB_FEED_V1", source: "facebook", medium: "paid_social" }
             };
 
             // github.io is deliberately NOT allowed — legacy links are rewritten to the
@@ -96,15 +96,24 @@
             var utm_content = (params.get("utm_content") || "").trim();
             var rawRedirect = params.get("redirect");
 
-            // Short code expands into landing + campaign + content
+            // Short code expands into landing + campaign + content.
+            // Key MUST exist in SHORT_LINKS (same as sheet Short_Code).
             var shortCode = (params.get("c") || "").trim().toLowerCase();
-            if (shortCode && SHORT_LINKS[shortCode]) {
+            var shortKnown = !!(shortCode && SHORT_LINKS[shortCode]);
+            if (shortKnown) {
                 var preset = SHORT_LINKS[shortCode];
                 if (!rawRedirect) rawRedirect = preset.landing;
                 if (!utm_campaign) utm_campaign = preset.campaign;
                 if (!utm_content) utm_content = preset.content;
                 if (!utm_source) utm_source = preset.source || "youtube";
                 if (!utm_medium) utm_medium = preset.medium || "video";
+            } else if (shortCode) {
+                // Unknown ?c= — still log a click (don't silently skip doGet)
+                console.warn("[Tracker] Unknown short code (add to SHORT_LINKS / fix sheet Short_Code):", shortCode);
+                if (!utm_content) utm_content = shortCode.toUpperCase().replace(/[^A-Z0-9]+/g, "_");
+                if (!utm_campaign) utm_campaign = "CMP-SHORT-" + shortCode.replace(/[^a-z0-9]+/gi, "").toUpperCase();
+                if (!utm_source) utm_source = "direct";
+                if (!utm_medium) utm_medium = "short_link";
             }
 
             // Never treat click UUID (CMP_xxxx) as marketing campaign code
@@ -150,11 +159,11 @@
                 utm_content: utm_content
             });
 
-            // Fire Apps Script log for newsletter OR campaign UTM clicks.
-            // WAIT for beacon before redirect — 80ms was cancelling the request
-            // so Marketing_Events never received click rows.
+            // Fire Apps Script for: newsletter, long UTM URL, OR any ?c= short link.
+            // WAIT for beacon before redirect — otherwise Marketing_Events misses clicks.
             var hasCampaignUtm = !!(utm_campaign || utm_source || utm_content);
-            if (email || cmp || hasCampaignUtm) {
+            var shouldLogClick = !!(email || cmp || hasCampaignUtm || shortCode);
+            if (shouldLogClick) {
                 var qs = [
                     "event=click",
                     "cmp=" + encodeURIComponent(cmp || ("CLK_" + Date.now())),
@@ -169,6 +178,7 @@
                 ].join("&");
 
                 var beaconUrl = APPS_SCRIPT_URL + (APPS_SCRIPT_URL.indexOf("?") >= 0 ? "&" : "?") + qs;
+                console.log("[Tracker] Click beacon →", shortCode || "(long)", utm_campaign);
                 fireAppsScriptBeacon(beaconUrl, function () {
                     window.location.replace(targetUrl);
                 });
