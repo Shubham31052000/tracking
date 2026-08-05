@@ -51,7 +51,8 @@
             // ============================================================
 
             // ⚠️ Keep in sync with solutions.html Apps Script /exec URL
-            var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw62GW8CXcu4-tl9HcbB39OYAqNNl2Gjut0QFPoPwutxQSHwsr4VQzcz5eeQkYnKvtivA/exec";
+            // ⚠️ MUST be the SAME /exec as solutions.html — otherwise clicks & forms hit different apps
+            var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyu90LhaAADoN1cAD5jgmajnBCzrRL_SZLuU7ZBYom4CiqMqB-NGozgZFKYXIpb9aM9A/exec";
 
             // Default landing when someone opens the domain with NO redirect param
             var DEFAULT_LANDING = "https://campaign.bioenabletech.com/solutions.html";
@@ -155,8 +156,9 @@
             var hasCampaignUtm = !!(utm_campaign || utm_source || utm_content);
             if (email || cmp || hasCampaignUtm) {
                 var qs = [
-                    "cmp=" + encodeURIComponent(cmp || ("YTCLK_" + Date.now())),
-                    "cid=" + encodeURIComponent(cid || "YOUTUBE_CLICK"),
+                    "event=click",
+                    "cmp=" + encodeURIComponent(cmp || ("CLK_" + Date.now())),
+                    "cid=" + encodeURIComponent(cid || "LINK_CLICK"),
                     "email=" + encodeURIComponent(email),
                     "utm_source=" + encodeURIComponent(utm_source),
                     "utm_medium=" + encodeURIComponent(utm_medium),
