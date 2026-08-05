@@ -65,12 +65,13 @@
             // Regenerate this block from the sheet: YouTube Links > Print short-link map
             // ------------------------------------------------------------
             var SHORT_LINKS = {
-                "ovse":       { landing: DEFAULT_LANDING + "#ovse",       campaign: "CMP-YT-OVSE",       content: "OVSE_DEMO_VIDEO" },
-                "camblocker": { landing: DEFAULT_LANDING + "#camblocker", campaign: "CMP-YT-CAMBLOCKER", content: "CAMBLOCKER_DEMO_VIDEO" },
-                "agent":      { landing: DEFAULT_LANDING + "#aiagent",    campaign: "CMP-YT-AGENT",      content: "AGENT_DEMO_VIDEO" },
-                "attendance": { landing: DEFAULT_LANDING + "#attendance", campaign: "CMP-YT-ATTENDANCE", content: "CCTV_ATTENDANCE_DEMO_VIDEO" },
-                "ai":         { landing: DEFAULT_LANDING,                 campaign: "CMP-YT-AI",         content: "AI_SOLUTIONS_OVERVIEW" },
-                "software":   { landing: DEFAULT_LANDING,                 campaign: "CMP-YT-SOFTWARE",   content: "SOFTWARE_SOLUTIONS_OVERVIEW" }
+                "ovse":       { landing: DEFAULT_LANDING + "#ovse",       campaign: "CMP-YT-OVSE",       content: "OVSE_DEMO_VIDEO",           source: "youtube",  medium: "video" },
+                "camblocker": { landing: DEFAULT_LANDING + "#camblocker", campaign: "CMP-YT-CAMBLOCKER", content: "CAMBLOCKER_DEMO_VIDEO",     source: "youtube",  medium: "video" },
+                "agent":      { landing: DEFAULT_LANDING + "#aiagent",    campaign: "CMP-YT-AGENT",      content: "AGENT_DEMO_VIDEO",          source: "youtube",  medium: "video" },
+                "attendance": { landing: DEFAULT_LANDING + "#attendance", campaign: "CMP-YT-ATTENDANCE", content: "CCTV_ATTENDANCE_DEMO_VIDEO",source: "youtube",  medium: "video" },
+                "ai":         { landing: DEFAULT_LANDING,                 campaign: "CMP-YT-AI",         content: "AI_SOLUTIONS_OVERVIEW",     source: "youtube",  medium: "video" },
+                "software":   { landing: DEFAULT_LANDING,                 campaign: "CMP-YT-SOFTWARE",   content: "SOFTWARE_SOLUTIONS_OVERVIEW", source: "youtube", medium: "video" },
+                "fb-camblocker": { landing: DEFAULT_LANDING + "#camblocker", campaign: "CMP-FB-CAMBLOCKER", content: "FB_FEED_V1", source: "facebook", medium: "paid_social" }
             };
 
             // github.io is deliberately NOT allowed — legacy links are rewritten to the
@@ -101,8 +102,8 @@
                 if (!rawRedirect) rawRedirect = preset.landing;
                 if (!utm_campaign) utm_campaign = preset.campaign;
                 if (!utm_content) utm_content = preset.content;
-                if (!utm_source) utm_source = "youtube";
-                if (!utm_medium) utm_medium = "video";
+                if (!utm_source) utm_source = preset.source || "youtube";
+                if (!utm_medium) utm_medium = preset.medium || "video";
             }
 
             // Never treat click UUID (CMP_xxxx) as marketing campaign code
