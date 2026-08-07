@@ -1,0 +1,121 @@
+{
+  "software01": {
+    "landing": "https://campaign.bioenabletech.com/solutions.html#enquire",
+    "campaign": "CMP-YT_SOFTWARE_01",
+    "content": "SOFTWARE_SOLUTIONS_OVERVIEW_01",
+    "source": "youtube",
+    "medium": "video"
+  },
+  "software02": {
+    "landing": "https://campaign.bioenabletech.com/solutions.html#enquire",
+    "campaign": "CMP-YT_SOFTWARE_02",
+    "content": "SOFTWARE_SOLUTIONS_OVERVIEW_02",
+    "source": "youtube",
+    "medium": "video"
+  },
+  "software03": {
+    "landing": "https://campaign.bioenabletech.com/solutions.html#enquire",
+    "campaign": "CMP-YT_SOFTWARE_03",
+    "content": "SOFTWARE_SOLUTIONS_OVERVIEW_03",
+    "source": "youtube",
+    "medium": "video"
+  },
+  "software04": {
+    "landing": "https://campaign.bioenabletech.com/solutions.html#enquire",
+    "campaign": "CMP-YT_SOFTWARE_04",
+    "content": "SOFTWARE_SOLUTIONS_OVERVIEW_04",
+    "source": "youtube",
+    "medium": "video"
+  },
+  "software05": {
+    "landing": "https://campaign.bioenabletech.com/solutions.html#enquire",
+    "campaign": "CMP-YT_SOFTWARE_05",
+    "content": "SOFTWARE_SOLUTIONS_OVERVIEW_05",
+    "source": "youtube",
+    "medium": "video"
+  },
+  "software06": {
+    "landing": "https://campaign.bioenabletech.com/solutions.html#enquire",
+    "campaign": "CMP-YT_SOFTWARE_06",
+    "content": "SOFTWARE_SOLUTIONS_OVERVIEW_06",
+    "source": "youtube",
+    "medium": "video"
+  },
+  "software07": {
+    "landing": "https://campaign.bioenabletech.com/solutions.html#enquire",
+    "campaign": "CMP-YT_SOFTWARE_07",
+    "content": "SOFTWARE_SOLUTIONS_OVERVIEW_07",
+    "source": "youtube",
+    "medium": "video"
+  },
+  "software08": {
+    "landing": "https://campaign.bioenabletech.com/solutions.html#enquire",
+    "campaign": "CMP-YT_SOFTWARE_08",
+    "content": "SOFTWARE_SOLUTIONS_OVERVIEW_08",
+    "source": "youtube",
+    "medium": "video"
+  },
+  "software09": {
+    "landing": "https://campaign.bioenabletech.com/solutions.html#enquire",
+    "campaign": "CMP-YT_SOFTWARE_09",
+    "content": "SOFTWARE_SOLUTIONS_OVERVIEW_09",
+    "source": "youtube",
+    "medium": "video"
+  },
+  "software10": {
+    "landing": "https://campaign.bioenabletech.com/solutions.html#enquire",
+    "campaign": "CMP-YT_SOFTWARE_10",
+    "content": "SOFTWARE_SOLUTIONS_OVERVIEW_10",
+    "source": "youtube",
+    "medium": "video"
+  },
+  "software11": {
+    "landing": "https://campaign.bioenabletech.com/solutions.html#enquire",
+    "campaign": "CMP-YT_SOFTWARE_11",
+    "content": "SOFTWARE_SOLUTIONS_OVERVIEW_11",
+    "source": "youtube",
+    "medium": "video"
+  },
+  "software12": {
+    "landing": "https://campaign.bioenabletech.com/solutions.html#enquire",
+    "campaign": "CMP-YT_SOFTWARE_12",
+    "content": "SOFTWARE_SOLUTIONS_OVERVIEW_12",
+    "source": "youtube",
+    "medium": "video"
+  },
+  "software13": {
+    "landing": "https://campaign.bioenabletech.com/solutions.html#enquire",
+    "campaign": "CMP-YT_SOFTWARE_13",
+    "content": "SOFTWARE_SOLUTIONS_OVERVIEW_13",
+    "source": "youtube",
+    "medium": "video"
+  },
+  "software14": {
+    "landing": "https://campaign.bioenabletech.com/solutions.html#enquire",
+    "campaign": "CMP-YT_SOFTWARE_14",
+    "content": "SOFTWARE_SOLUTIONS_OVERVIEW_14",
+    "source": "youtube",
+    "medium": "video"
+  },
+  "software15": {
+    "landing": "https://campaign.bioenabletech.com/solutions.html#enquire",
+    "campaign": "CMP-YT_SOFTWARE_15",
+    "content": "SOFTWARE_SOLUTIONS_OVERVIEW_15",
+    "source": "youtube",
+    "medium": "video"
+  },
+  "software16": {
+    "landing": "https://campaign.bioenabletech.com/solutions.html#enquire",
+    "campaign": "CMP-YT_SOFTWARE_16",
+    "content": "SOFTWARE_SOLUTIONS_OVERVIEW_16",
+    "source": "https://campaign.bioenabletech.com/solutions.html",
+    "medium": "video"
+  },
+  "cmpfbcamblocker": {
+    "landing": "https://campaign.bioenabletech.com/solutions.html#enquire",
+    "campaign": "CMP-FB-CAMBLOCKER",
+    "content": "camblocker_overview_1",
+    "source": "facebook",
+    "medium": "paid_social"
+  }
+}

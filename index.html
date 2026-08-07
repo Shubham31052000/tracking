@@ -46,39 +46,29 @@
     <script>
         (function () {
             // ============================================================
-            // BioEnable Tracking Redirect v5 — custom domain
-            // Domain: https://campaign.bioenabletech.com/
+            // BioEnable Tracking Redirect v6
+            // Short codes resolve from:
+            //   1) baked SHORT_LINKS
+            //   2) short-links.json (same folder — from Marketing_Links)
+            //   3) smart infer (software08 → youtube — NEVER "direct")
             // ============================================================
 
-            // ⚠️ MUST match solutions.html AND live Deploy → Version that shows in Executions
-            // Live (Working Version 32 as of 05-Aug-2026):
             var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw62GW8CXcu4-tl9HcbB39OYAqNNl2Gjut0QFPoPwutxQSHwsr4VQzcz5eeQkYnKvtivA/exec";
-
-            // Default landing when someone opens the domain with NO redirect param
             var DEFAULT_LANDING = "https://campaign.bioenabletech.com/solutions.html";
-
-            // ------------------------------------------------------------
-            // SHORT LINKS — keys MUST match Marketing_Links column Short_Code
-            // (and Short_Link ?c=…). Hardcoded here — Print short-link map
-            // from sheet, paste this block, upload as GitHub index.html.
-            //   https://campaign.bioenabletech.com/?c=fb-camblocker
-            // ------------------------------------------------------------
-            // All ads/YT short links land on the form (#enquire), NOT product mid-page sections.
             var FORM_LANDING = DEFAULT_LANDING + "#enquire";
+
+            // Fallback seeds (full map loads from short-links.json)
             var SHORT_LINKS = {
-                "ovse":       { landing: FORM_LANDING, campaign: "CMP-YT-OVSE",       content: "OVSE_DEMO_VIDEO",            source: "youtube",  medium: "video" },
-                "camblocker": { landing: FORM_LANDING, campaign: "CMP-YT-CAMBLOCKER", content: "CAMBLOCKER_DEMO_VIDEO",      source: "youtube",  medium: "video" },
-                "agent":      { landing: FORM_LANDING, campaign: "CMP-YT-AGENT",      content: "AGENT_DEMO_VIDEO",           source: "youtube",  medium: "video" },
-                "attendance": { landing: FORM_LANDING, campaign: "CMP-YT-ATTENDANCE", content: "CCTV_ATTENDANCE_DEMO_VIDEO", source: "youtube",  medium: "video" },
-                "ai":         { landing: FORM_LANDING, campaign: "CMP-YT-AI",         content: "AI_SOLUTIONS_OVERVIEW",      source: "youtube",  medium: "video" },
-                "software":   { landing: FORM_LANDING, campaign: "CMP-YT-SOFTWARE",   content: "SOFTWARE_SOLUTIONS_OVERVIEW", source: "youtube", medium: "video" },
+                "ovse": { landing: FORM_LANDING, campaign: "CMP-YT-OVSE", content: "OVSE_DEMO_VIDEO", source: "youtube", medium: "video" },
+                "camblocker": { landing: FORM_LANDING, campaign: "CMP-YT-CAMBLOCKER", content: "CAMBLOCKER_DEMO_VIDEO", source: "youtube", medium: "video" },
+                "agent": { landing: FORM_LANDING, campaign: "CMP-YT-AGENT", content: "AGENT_DEMO_VIDEO", source: "youtube", medium: "video" },
+                "attendance": { landing: FORM_LANDING, campaign: "CMP-YT-ATTENDANCE", content: "CCTV_ATTENDANCE_DEMO_VIDEO", source: "youtube", medium: "video" },
+                "ai": { landing: FORM_LANDING, campaign: "CMP-YT-AI", content: "AI_SOLUTIONS_OVERVIEW", source: "youtube", medium: "video" },
+                "software": { landing: FORM_LANDING, campaign: "CMP-YT-SOFTWARE", content: "SOFTWARE_SOLUTIONS_OVERVIEW", source: "youtube", medium: "video" },
                 "fb-camblocker": { landing: FORM_LANDING, campaign: "CMP-FB-CAMBLOCKER", content: "FB_FEED_V1", source: "facebook", medium: "paid_social" },
-                // Alias — sheet Short_Code sometimes used this (no hyphens)
                 "cmpfbcamblocker": { landing: FORM_LANDING, campaign: "CMP-FB-CAMBLOCKER", content: "FB_FEED_V1", source: "facebook", medium: "paid_social" }
             };
 
-            // github.io is deliberately NOT allowed — legacy links are rewritten to the
-            // branded domain below, so a visitor can never be dropped on the raw repo URL.
             var ALLOWED_HOST_EXACT = [
                 "bioenabletech.com",
                 "www.bioenabletech.com",
@@ -91,109 +81,206 @@
             var cid = params.get("cid") || "";
             var cmp = params.get("cmp") || "";
             var email = params.get("email") || "";
-
             var utm_source = (params.get("utm_source") || "").trim();
             var utm_medium = (params.get("utm_medium") || "").trim();
             var utm_campaign = (params.get("utm_campaign") || "").trim();
             var utm_content = (params.get("utm_content") || "").trim();
             var rawRedirect = params.get("redirect");
-
-            // Short code expands into landing + campaign + content.
-            // Key MUST exist in SHORT_LINKS (same as sheet Short_Code).
             var shortCode = (params.get("c") || "").trim().toLowerCase();
-            var shortKnown = !!(shortCode && SHORT_LINKS[shortCode]);
-            if (shortKnown) {
-                var preset = SHORT_LINKS[shortCode];
-                if (!rawRedirect) rawRedirect = preset.landing;
-                if (!utm_campaign) utm_campaign = preset.campaign;
-                if (!utm_content) utm_content = preset.content;
-                if (!utm_source) utm_source = preset.source || "youtube";
-                if (!utm_medium) utm_medium = preset.medium || "video";
-            } else if (shortCode) {
-                // Unknown ?c= — still log a click (don't silently skip doGet)
-                console.warn("[Tracker] Unknown short code (add to SHORT_LINKS / fix sheet Short_Code):", shortCode);
-                if (!utm_content) utm_content = shortCode.toUpperCase().replace(/[^A-Z0-9]+/g, "_");
-                if (!utm_campaign) utm_campaign = "CMP-SHORT-" + shortCode.replace(/[^a-z0-9]+/gi, "").toUpperCase();
-                if (!utm_source) utm_source = "direct";
-                if (!utm_medium) utm_medium = "short_link";
+
+            // Load sheet map first when using ?c= so software08 → youtube not direct
+            if (shortCode) {
+                loadShortLinksJson(function () {
+                    applyShortCodeAndGo();
+                });
+            } else {
+                applyShortCodeAndGo();
             }
 
-            // Never treat click UUID (CMP_xxxx) as marketing campaign code
-            if (!utm_campaign || utm_campaign === cmp || /^CMP_[0-9a-f-]{8,}$/i.test(utm_campaign)) {
-                utm_campaign = "";
-            }
-
-            // Newsletter clicks with email+cmp but missing UTMs
-            if (email && cmp && !utm_source && !utm_medium) {
-                utm_source = "newsletter";
-                utm_medium = "email";
-            }
-
-            // Resolve redirect target
-            var targetUrl = FALLBACK_URL;
-            if (rawRedirect && rawRedirect.trim() !== "") {
+            function loadShortLinksJson(done) {
                 try {
-                    var decoded = rawRedirect;
-                    for (var d = 0; d < 2; d++) {
-                        try {
-                            var next = decodeURIComponent(decoded);
-                            if (next === decoded) break;
-                            decoded = next;
-                        } catch (e) { break; }
-                    }
-                    decoded = rewriteLegacyHost(toAbsoluteHttps(decoded));
-                    if (isAllowedRedirect(decoded)) {
-                        targetUrl = decoded;
-                    } else {
-                        console.warn("[Tracker] BLOCKED redirect host (not in allowlist):", decoded);
-                        targetUrl = FALLBACK_URL;
-                    }
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("GET", "short-links.json?_=" + Date.now(), true);
+                    xhr.timeout = 2500;
+                    xhr.onload = function () {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            try {
+                                var remote = JSON.parse(xhr.responseText);
+                                Object.keys(remote).forEach(function (k) {
+                                    SHORT_LINKS[String(k).toLowerCase()] = remote[k];
+                                });
+                                console.log("[Tracker] Loaded short-links.json (" + Object.keys(remote).length + " codes)");
+                            } catch (e) {
+                                console.warn("[Tracker] short-links.json parse failed", e);
+                            }
+                        }
+                        done();
+                    };
+                    xhr.onerror = function () { done(); };
+                    xhr.ontimeout = function () { done(); };
+                    xhr.send();
                 } catch (e) {
-                    targetUrl = FALLBACK_URL;
+                    done();
                 }
             }
 
-            // Append UTMs onto landing page
-            targetUrl = appendUtms(targetUrl, {
-                utm_source: utm_source,
-                utm_medium: utm_medium,
-                utm_campaign: utm_campaign,
-                utm_content: utm_content
-            });
+            /**
+             * Infer from Short_Code patterns when JSON/map missing.
+             * software08 → youtube / CMP-YT_SOFTWARE_08  (matches Marketing_Links)
+             * NEVER returns source=direct (that broke Zoho Lead Source).
+             */
+            function inferPresetFromCode(code) {
+                var c = (code || "").toLowerCase();
+                if (!c) return null;
 
-            // Always stop on the form — never #camblocker / product sections
-            targetUrl = forceEnquireHash(targetUrl);
+                if (/^fb[-_]?/.test(c) || c.indexOf("facebook") !== -1 || c.indexOf("meta") !== -1) {
+                    return {
+                        landing: FORM_LANDING,
+                        campaign: "CMP-FB-" + c.replace(/^fb[-_]?/, "").replace(/[^a-z0-9]+/gi, "_").toUpperCase(),
+                        content: c.replace(/[^a-z0-9]+/gi, "_").toUpperCase(),
+                        source: "facebook",
+                        medium: "paid_social"
+                    };
+                }
+                if (/^li[-_]?/.test(c) || c.indexOf("linkedin") !== -1) {
+                    return {
+                        landing: FORM_LANDING,
+                        campaign: "CMP-LI-" + c.replace(/^li[-_]?/, "").replace(/[^a-z0-9]+/gi, "_").toUpperCase(),
+                        content: c.replace(/[^a-z0-9]+/gi, "_").toUpperCase(),
+                        source: "linkedin",
+                        medium: "paid_social"
+                    };
+                }
+                if (/^ga[-_]?/.test(c) || c.indexOf("google") !== -1) {
+                    return {
+                        landing: FORM_LANDING,
+                        campaign: "CMP-GA-" + c.replace(/^ga[-_]?/, "").replace(/[^a-z0-9]+/gi, "_").toUpperCase(),
+                        content: c.replace(/[^a-z0-9]+/gi, "_").toUpperCase(),
+                        source: "google",
+                        medium: "cpc"
+                    };
+                }
 
-            // Fire Apps Script for: newsletter, long UTM URL, OR any ?c= short link.
-            // WAIT for beacon before redirect — otherwise Marketing_Events misses clicks.
-            var hasCampaignUtm = !!(utm_campaign || utm_source || utm_content);
-            var shouldLogClick = !!(email || cmp || hasCampaignUtm || shortCode);
-            if (shouldLogClick) {
-                var qs = [
-                    "event=click",
-                    "cmp=" + encodeURIComponent(cmp || ("CLK_" + Date.now())),
-                    "cid=" + encodeURIComponent(cid || "LINK_CLICK"),
-                    "email=" + encodeURIComponent(email),
-                    "utm_source=" + encodeURIComponent(utm_source),
-                    "utm_medium=" + encodeURIComponent(utm_medium),
-                    "utm_campaign=" + encodeURIComponent(utm_campaign),
-                    "utm_content=" + encodeURIComponent(utm_content),
-                    "redirect=" + encodeURIComponent(targetUrl),
-                    "_t=" + Date.now()
-                ].join("&");
+                // software08 / ovse01 / camblocker2 — sheet style CMP-YT_SOFTWARE_08
+                var m = c.match(/^(software|ovse|camblocker|agent|attendance|ai)(\d+)$/i);
+                if (m) {
+                    var base = m[1].toLowerCase();
+                    var num = m[2];
+                    var baseUp = base.toUpperCase();
+                    var contentMap = {
+                        software: "SOFTWARE_SOLUTIONS_OVERVIEW_",
+                        ovse: "OVSE_DEMO_VIDEO_",
+                        camblocker: "CAMBLOCKER_DEMO_VIDEO_",
+                        agent: "AGENT_DEMO_VIDEO_",
+                        attendance: "CCTV_ATTENDANCE_DEMO_VIDEO_",
+                        ai: "AI_SOLUTIONS_OVERVIEW_"
+                    };
+                    return {
+                        landing: FORM_LANDING,
+                        campaign: "CMP-YT_" + baseUp + "_" + num,
+                        content: (contentMap[base] || (baseUp + "_")) + num,
+                        source: "youtube",
+                        medium: "video"
+                    };
+                }
 
-                var beaconUrl = APPS_SCRIPT_URL + (APPS_SCRIPT_URL.indexOf("?") >= 0 ? "&" : "?") + qs;
-                console.log("[Tracker] Click beacon →", shortCode || "(long)", utm_campaign);
-                fireAppsScriptBeacon(beaconUrl, function () {
-                    window.location.replace(targetUrl);
-                });
-            } else {
-                window.location.replace(targetUrl);
+                // Generic YT-style short code
+                return {
+                    landing: FORM_LANDING,
+                    campaign: "CMP-YT-" + c.replace(/[^a-z0-9]+/gi, "-").toUpperCase(),
+                    content: c.replace(/[^a-z0-9]+/gi, "_").toUpperCase(),
+                    source: "youtube",
+                    medium: "video"
+                };
             }
 
-            // A redirect value saved without a scheme ("campaign.bioenabletech.com/x.html")
-            // would otherwise resolve as a path on this domain and produce
-            // campaign.bioenabletech.com/campaign.bioenabletech.com/x.html
+            function applyShortCodeAndGo() {
+                if (shortCode) {
+                    var preset = SHORT_LINKS[shortCode] || inferPresetFromCode(shortCode);
+                    if (preset) {
+                        if (!SHORT_LINKS[shortCode]) {
+                            console.warn("[Tracker] Used inferred map for", shortCode, preset);
+                        }
+                        if (!rawRedirect) rawRedirect = preset.landing || FORM_LANDING;
+                        if (!utm_campaign) utm_campaign = preset.campaign || "";
+                        if (!utm_content) utm_content = preset.content || "";
+                        if (!utm_source) utm_source = preset.source || "youtube";
+                        if (!utm_medium) utm_medium = preset.medium || "video";
+                    }
+                }
+
+                // Never keep bogus "direct" from old unknown-code redirects if we have a short code
+                if (shortCode && (utm_source === "direct" || utm_medium === "short_link")) {
+                    var fix = SHORT_LINKS[shortCode] || inferPresetFromCode(shortCode);
+                    if (fix) {
+                        utm_source = fix.source || "youtube";
+                        utm_medium = fix.medium || "video";
+                        if (!utm_campaign || /^CMP-SHORT-/i.test(utm_campaign)) utm_campaign = fix.campaign || utm_campaign;
+                        if (!utm_content || utm_content === shortCode.toUpperCase()) utm_content = fix.content || utm_content;
+                    }
+                }
+
+                if (!utm_campaign || utm_campaign === cmp || /^CMP_[0-9a-f-]{8,}$/i.test(utm_campaign)) {
+                    utm_campaign = "";
+                }
+
+                if (email && cmp && !utm_source && !utm_medium) {
+                    utm_source = "newsletter";
+                    utm_medium = "email";
+                }
+
+                var targetUrl = FALLBACK_URL;
+                if (rawRedirect && rawRedirect.trim() !== "") {
+                    try {
+                        var decoded = rawRedirect;
+                        for (var d = 0; d < 2; d++) {
+                            try {
+                                var next = decodeURIComponent(decoded);
+                                if (next === decoded) break;
+                                decoded = next;
+                            } catch (e) { break; }
+                        }
+                        decoded = rewriteLegacyHost(toAbsoluteHttps(decoded));
+                        if (isAllowedRedirect(decoded)) targetUrl = decoded;
+                        else targetUrl = FALLBACK_URL;
+                    } catch (e) {
+                        targetUrl = FALLBACK_URL;
+                    }
+                }
+
+                targetUrl = appendUtms(targetUrl, {
+                    utm_source: utm_source,
+                    utm_medium: utm_medium,
+                    utm_campaign: utm_campaign,
+                    utm_content: utm_content
+                });
+                targetUrl = forceEnquireHash(targetUrl);
+
+                var hasCampaignUtm = !!(utm_campaign || utm_source || utm_content);
+                var shouldLogClick = !!(email || cmp || hasCampaignUtm || shortCode);
+                if (shouldLogClick) {
+                    var qs = [
+                        "event=click",
+                        "cmp=" + encodeURIComponent(cmp || ("CLK_" + Date.now())),
+                        "cid=" + encodeURIComponent(cid || "LINK_CLICK"),
+                        "email=" + encodeURIComponent(email),
+                        "utm_source=" + encodeURIComponent(utm_source),
+                        "utm_medium=" + encodeURIComponent(utm_medium),
+                        "utm_campaign=" + encodeURIComponent(utm_campaign),
+                        "utm_content=" + encodeURIComponent(utm_content),
+                        "redirect=" + encodeURIComponent(targetUrl),
+                        "_t=" + Date.now()
+                    ].join("&");
+                    var beaconUrl = APPS_SCRIPT_URL + (APPS_SCRIPT_URL.indexOf("?") >= 0 ? "&" : "?") + qs;
+                    console.log("[Tracker] Click beacon →", shortCode || "(long)", utm_source, utm_campaign);
+                    fireAppsScriptBeacon(beaconUrl, function () {
+                        window.location.replace(targetUrl);
+                    });
+                } else {
+                    window.location.replace(targetUrl);
+                }
+            }
+
             function toAbsoluteHttps(url) {
                 var s = (url || "").trim();
                 if (!s) return s;
@@ -203,8 +290,6 @@
                 return s;
             }
 
-            // Links already pasted in YouTube descriptions still point at the raw
-            // GitHub Pages URL. Map them onto the branded domain instead of blocking.
             function rewriteLegacyHost(url) {
                 try {
                     var u = new URL(url);
@@ -218,8 +303,6 @@
 
             function isAllowedRedirect(url) {
                 try {
-                    // No base URL — a relative value must fail here, never be
-                    // resolved against our own origin.
                     var u = new URL(url);
                     if (u.protocol !== "https:") return false;
                     var host = u.hostname.toLowerCase();
@@ -239,9 +322,7 @@
                     var u = new URL(url);
                     Object.keys(utms).forEach(function (k) {
                         var v = utms[k];
-                        if (v && !u.searchParams.get(k)) {
-                            u.searchParams.set(k, v);
-                        }
+                        if (v && !u.searchParams.get(k)) u.searchParams.set(k, v);
                     });
                     return u.toString();
                 } catch (e) {
@@ -256,7 +337,6 @@
                 }
             }
 
-            /** Campaign ads land on the form (#enquire), not product mid-page sections. */
             function forceEnquireHash(url) {
                 try {
                     var u = new URL(url);
@@ -273,8 +353,6 @@
                 }
             }
 
-            // ONE beacon only (Image). fetch+Image both called doGet → duplicate Events rows.
-            // Redirect after load/error or 500ms — image request usually already in flight.
             function fireAppsScriptBeacon(url, onDone) {
                 var done = false;
                 function finish() {
@@ -282,7 +360,6 @@
                     done = true;
                     if (typeof onDone === "function") onDone();
                 }
-
                 try {
                     var img = new Image();
                     img.onload = finish;
@@ -293,7 +370,6 @@
                     finish();
                     return;
                 }
-
                 setTimeout(finish, 500);
             }
         })();
