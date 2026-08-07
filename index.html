@@ -88,31 +88,74 @@
             var rawRedirect = params.get("redirect");
             var shortCode = (params.get("c") || "").trim().toLowerCase();
 
-            // Load sheet map first when using ?c= so software08 → youtube not direct
+            // Load live map from Apps Script (Marketing_Links) — no manual JSON upload.
+            // Fallback: short-links.json on GitHub, then infer (never "direct").
             if (shortCode) {
-                loadShortLinksJson(function () {
+                loadLiveShortMap(function () {
                     applyShortCodeAndGo();
                 });
             } else {
                 applyShortCodeAndGo();
             }
 
-            function loadShortLinksJson(done) {
+            function mergeMap(remote) {
+                if (!remote || typeof remote !== "object") return;
+                Object.keys(remote).forEach(function (k) {
+                    SHORT_LINKS[String(k).toLowerCase()] = remote[k];
+                });
+            }
+
+            function loadLiveShortMap(done) {
+                var finished = false;
+                function finish() {
+                    if (finished) return;
+                    finished = true;
+                    done();
+                }
+                setTimeout(finish, 3500);
+
+                // 1) Apps Script JSONP — always fresh from sheet (after Deploy)
+                try {
+                    var cbName = "_beMap" + String(Date.now());
+                    window[cbName] = function (data) {
+                        try {
+                            mergeMap(data);
+                            console.log("[Tracker] Live short map from Apps Script (" + Object.keys(data || {}).length + ")");
+                        } catch (e1) {}
+                        try { delete window[cbName]; } catch (e2) {}
+                        try {
+                            var s = document.getElementById(cbName);
+                            if (s && s.parentNode) s.parentNode.removeChild(s);
+                        } catch (e3) {}
+                        finish();
+                    };
+                    var script = document.createElement("script");
+                    script.id = cbName;
+                    script.async = true;
+                    script.src = APPS_SCRIPT_URL +
+                        (APPS_SCRIPT_URL.indexOf("?") >= 0 ? "&" : "?") +
+                        "action=short_map&callback=" + encodeURIComponent(cbName) +
+                        "&_t=" + Date.now();
+                    script.onerror = function () {
+                        loadShortLinksJsonFile(finish);
+                    };
+                    document.head.appendChild(script);
+                } catch (e) {
+                    loadShortLinksJsonFile(finish);
+                }
+            }
+
+            function loadShortLinksJsonFile(done) {
                 try {
                     var xhr = new XMLHttpRequest();
                     xhr.open("GET", "short-links.json?_=" + Date.now(), true);
-                    xhr.timeout = 2500;
+                    xhr.timeout = 2000;
                     xhr.onload = function () {
                         if (xhr.status >= 200 && xhr.status < 300) {
                             try {
-                                var remote = JSON.parse(xhr.responseText);
-                                Object.keys(remote).forEach(function (k) {
-                                    SHORT_LINKS[String(k).toLowerCase()] = remote[k];
-                                });
-                                console.log("[Tracker] Loaded short-links.json (" + Object.keys(remote).length + " codes)");
-                            } catch (e) {
-                                console.warn("[Tracker] short-links.json parse failed", e);
-                            }
+                                mergeMap(JSON.parse(xhr.responseText));
+                                console.log("[Tracker] Fallback short-links.json loaded");
+                            } catch (e) {}
                         }
                         done();
                     };
