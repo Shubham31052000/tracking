@@ -585,8 +585,8 @@ src="https://www.facebook.com/tr?id=1078216311398532&ev=PageView&noscript=1"
     }
   }
 
-  // sendBeacon / fetch(no-cors) do NOT follow Apps Script 302 redirects.
-  // Image pixel + hidden iframe GET do.
+  // ONE beacon only — Image + iframe both called doGet → duplicate Zoho tasks/descriptions.
+  // Image GET follows Apps Script 302 redirects reliably.
   function pushToZoho(payload){
     var qs = Object.keys(payload).map(function(k){
       return encodeURIComponent(k) + '=' + encodeURIComponent(payload[k] == null ? '' : payload[k]);
@@ -599,15 +599,9 @@ src="https://www.facebook.com/tr?id=1078216311398532&ev=PageView&noscript=1"
       var img = new Image();
       img.referrerPolicy = 'no-referrer-when-downgrade';
       img.src = url;
-    } catch(e){}
-
-    try {
-      var f = document.createElement('iframe');
-      f.style.cssText = 'display:none;width:0;height:0;border:0;';
-      f.src = url;
-      document.body.appendChild(f);
-      setTimeout(function(){ try{ document.body.removeChild(f); }catch(e){} }, 8000);
-    } catch(e){}
+    } catch(e){
+      console.warn('[BioEnable Landing] Image beacon failed', e);
+    }
   }
 
   function showErr(id, msg){
