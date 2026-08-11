@@ -245,10 +245,14 @@
                             console.warn("[Tracker] Used inferred map for", shortCode, preset);
                         }
                         if (!rawRedirect) rawRedirect = preset.landing || FORM_LANDING;
-                        if (!utm_campaign) utm_campaign = preset.campaign || "";
-                        if (!utm_content) utm_content = preset.content || "";
-                        if (!utm_source) utm_source = preset.source || "youtube";
-                        if (!utm_medium) utm_medium = preset.medium || "video";
+                        // ALWAYS use Marketing_Links when ?c= is present.
+                        // Meta ads often append utm_source=an|fb + numeric campaign/ad IDs
+                        // even if Tracking → URL parameters is empty — those must not win.
+                        utm_campaign = preset.campaign || "";
+                        utm_content = preset.content || "";
+                        utm_source = preset.source || "youtube";
+                        utm_medium = preset.medium || "video";
+                        console.log("[Tracker] Short code forced UTMs:", shortCode, utm_source, utm_campaign);
                     }
                 }
 
@@ -258,8 +262,8 @@
                     if (fix) {
                         utm_source = fix.source || "youtube";
                         utm_medium = fix.medium || "video";
-                        if (!utm_campaign || /^CMP-SHORT-/i.test(utm_campaign)) utm_campaign = fix.campaign || utm_campaign;
-                        if (!utm_content || utm_content === shortCode.toUpperCase()) utm_content = fix.content || utm_content;
+                        utm_campaign = fix.campaign || utm_campaign;
+                        utm_content = fix.content || utm_content;
                     }
                 }
 
@@ -296,7 +300,7 @@
                     utm_medium: utm_medium,
                     utm_campaign: utm_campaign,
                     utm_content: utm_content
-                });
+                }, !!shortCode);
                 targetUrl = forceEnquireHash(targetUrl);
 
                 var hasCampaignUtm = !!(utm_campaign || utm_source || utm_content);
@@ -360,18 +364,26 @@
                 }
             }
 
-            function appendUtms(url, utms) {
+            function appendUtms(url, utms, forceOverwrite) {
                 try {
                     var u = new URL(url);
                     Object.keys(utms).forEach(function (k) {
                         var v = utms[k];
-                        if (v && !u.searchParams.get(k)) u.searchParams.set(k, v);
+                        if (!v) return;
+                        // forceOverwrite: short-link (?c=) must replace Meta an/fb / numeric IDs
+                        if (forceOverwrite || !u.searchParams.get(k)) u.searchParams.set(k, v);
                     });
                     return u.toString();
                 } catch (e) {
                     var extra = [];
                     Object.keys(utms).forEach(function (k) {
-                        if (utms[k] && url.indexOf(k + "=") === -1) {
+                        if (!utms[k]) return;
+                        if (forceOverwrite) {
+                            // Strip existing key then re-add (best-effort fallback)
+                            url = url.replace(new RegExp("([?&])" + k + "=[^&]*", "i"), "$1");
+                            url = url.replace(/\?&/, "?").replace(/&&+/g, "&").replace(/[?&]$/, "");
+                        }
+                        if (forceOverwrite || url.indexOf(k + "=") === -1) {
                             extra.push(encodeURIComponent(k) + "=" + encodeURIComponent(utms[k]));
                         }
                     });
