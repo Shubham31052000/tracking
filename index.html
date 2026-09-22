@@ -69,12 +69,11 @@
                 "cmpfbcamblocker": { landing: FORM_LANDING, campaign: "CMP-FB-CAMBLOCKER", content: "FB_FEED_V1", source: "facebook", medium: "paid_social" }
             };
 
-            var ALLOWED_HOST_EXACT = [
+            // Allowed destination domains for redirection
+            var ALLOWED_DOMAINS = [
                 "bioenabletech.com",
-                "www.bioenabletech.com",
-                "campaign.bioenabletech.com"
+                "visive.ai"
             ];
-            var ALLOWED_HOST_SUFFIX = ".bioenabletech.com";
             var FALLBACK_URL = DEFAULT_LANDING;
 
             var params = new URLSearchParams(window.location.search);
@@ -299,7 +298,10 @@
                     utm_source: utm_source,
                     utm_medium: utm_medium,
                     utm_campaign: utm_campaign,
-                    utm_content: utm_content
+                    utm_content: utm_content,
+                    cid: cid,
+                    cmp: cmp,
+                    email: email
                 }, !!shortCode);
                 targetUrl = forceEnquireHash(targetUrl);
 
@@ -351,14 +353,11 @@
             function isAllowedRedirect(url) {
                 try {
                     var u = new URL(url);
-                    if (u.protocol !== "https:") return false;
+                    if (u.protocol !== "https:" && u.protocol !== "http:") return false;
                     var host = u.hostname.toLowerCase();
-                    if (ALLOWED_HOST_EXACT.indexOf(host) !== -1) return true;
-                    if (host.length > ALLOWED_HOST_SUFFIX.length &&
-                        host.slice(-ALLOWED_HOST_SUFFIX.length) === ALLOWED_HOST_SUFFIX) {
-                        return true;
-                    }
-                    return false;
+                    return ALLOWED_DOMAINS.some(function (d) {
+                        return host === d || (host.length > d.length && host.slice(-(d.length + 1)) === ("." + d));
+                    });
                 } catch (e) {
                     return false;
                 }
